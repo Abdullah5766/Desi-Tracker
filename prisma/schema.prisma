@@ -1,0 +1,126 @@
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+
+model User {
+  id            String        @id @default(cuid())
+  email         String        @unique
+  username      String        @unique
+  password      String
+  firstName     String?
+  lastName      String?
+  dateOfBirth   DateTime?
+  gender        Gender?
+  height        Float?
+  weight        Float?
+  activityLevel ActivityLevel @default(SEDENTARY)
+  goal          FitnessGoal   @default(MAINTAIN)
+  calorieGoal   Int?
+  proteinGoal   Float?
+  carbGoal      Float?
+  fatGoal       Float?
+  createdAt     DateTime      @default(now())
+  updatedAt     DateTime      @updatedAt
+  foodEntries   FoodEntry[]
+  foods         Food[]
+  cardioEntries CardioEntry[]
+
+  @@map("users")
+}
+
+model Food {
+  id          String      @id @default(cuid())
+  name        String
+  category    String?
+  calories    Float
+  protein     Float
+  carbs       Float
+  fat         Float
+  isVerified  Boolean     @default(false)
+  servingSize Float?
+  servingUnit String?
+  createdById String?
+  createdAt   DateTime    @default(now())
+  updatedAt   DateTime    @updatedAt
+  foodEntries FoodEntry[]
+  users       User?       @relation(fields: [createdById], references: [id])
+
+  @@map("foods")
+}
+
+model FoodEntry {
+  id        String   @id @default(cuid())
+  date      DateTime @default(now())
+  meal      MealType @default(BREAKFAST)
+  quantity  Float
+  unit      String   @default("g")
+  userId    String
+  foodId    String
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+  food      Food     @relation(fields: [foodId], references: [id])
+  user      User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@map("food_entries")
+}
+
+model CardioType {
+  id                String        @id @default(cuid())
+  name              String        @unique
+  caloriesPerMinute Float
+  description       String?
+  createdAt         DateTime      @default(now())
+  updatedAt         DateTime      @updatedAt
+  cardioEntries     CardioEntry[]
+
+  @@map("cardio_types")
+}
+
+model CardioEntry {
+  id           String     @id @default(cuid())
+  date         DateTime   @default(now())
+  duration     Int        // Duration in minutes
+  caloriesBurned Float
+  notes        String?
+  userId       String
+  cardioTypeId String
+  createdAt    DateTime   @default(now())
+  updatedAt    DateTime   @updatedAt
+  user         User       @relation(fields: [userId], references: [id], onDelete: Cascade)
+  cardioType   CardioType @relation(fields: [cardioTypeId], references: [id])
+
+  @@map("cardio_entries")
+}
+
+enum ActivityLevel {
+  SEDENTARY
+  LIGHTLY_ACTIVE
+  MODERATELY_ACTIVE
+  VERY_ACTIVE
+  EXTREMELY_ACTIVE
+}
+
+enum FitnessGoal {
+  LOSE_WEIGHT
+  MAINTAIN
+  GAIN_WEIGHT
+  GAIN_MUSCLE
+}
+
+enum Gender {
+  MALE
+  FEMALE
+  OTHER
+}
+
+enum MealType {
+  BREAKFAST
+  LUNCH
+  DINNER
+  SNACK
+}
