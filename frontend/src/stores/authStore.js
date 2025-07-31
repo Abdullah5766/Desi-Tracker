@@ -19,7 +19,7 @@ export const useAuthStore = create(
             password
           })
 
-          const { user, token } = response.data.data
+          const { user, token } = response.data
           const currentState = get()
 
           // If this is a different user than the previous one, clear persisted data
@@ -61,7 +61,7 @@ export const useAuthStore = create(
             password
           })
 
-          const { user, token } = response.data.data
+          const { user, token } = response.data
 
           // Clear any persisted data for new user
           // Import at runtime to avoid circular dependencies
