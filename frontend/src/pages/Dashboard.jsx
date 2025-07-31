@@ -23,6 +23,8 @@ import CaloriesCalculator from '../components/CaloriesCalculator'
 import FoodTracker from '../components/FoodTracker'
 import CardioTracker from '../components/CardioTracker'
 import MealPlan from '../components/MealPlan'
+import MonthlyProgress from '../components/MonthlyProgress'
+import ConfirmationModal from '../components/ConfirmationModal'
 
 // Animation variants
 
@@ -63,6 +65,7 @@ const Dashboard = () => {
   const [sidebarOpen, setSidebarOpen] = useState(false) // Default to closed
   const [activeSection, setActiveSection] = useState('overview')
   const [isMobile, setIsMobile] = useState(true) // Default to mobile (safer)
+  const [showLogoutModal, setShowLogoutModal] = useState(false)
 
   useEffect(() => {
     // Set initial sidebar state based on screen size
@@ -116,6 +119,10 @@ const Dashboard = () => {
   }
 
   const handleLogout = () => {
+    setShowLogoutModal(true)
+  }
+
+  const confirmLogout = () => {
     logout()
   }
 
@@ -124,7 +131,8 @@ const Dashboard = () => {
     { id: 'calculator', label: 'Calorie Calculator', icon: Calculator },
     { id: 'food-tracker', label: 'Food Tracker', icon: Utensils },
     { id: 'cardio-tracker', label: 'Log Cardio', icon: Heart },
-    { id: 'meal-plan', label: 'Meal Plan', icon: ChefHat }
+    { id: 'meal-plan', label: 'Meal Plan', icon: ChefHat },
+    { id: 'monthly-progress', label: 'Monthly Progress', icon: Target }
   ]
 
   return (
@@ -396,6 +404,18 @@ const Dashboard = () => {
         )}
       </AnimatePresence>
 
+      {/* Logout Confirmation Modal */}
+      <ConfirmationModal
+        isOpen={showLogoutModal}
+        onClose={() => setShowLogoutModal(false)}
+        onConfirm={confirmLogout}
+        title="Logout Confirmation"
+        message="Are you sure you want to logout? You will need to sign in again to access your account."
+        confirmText="Logout"
+        cancelText="Cancel"
+        type="warning"
+      />
+
       {/* Desktop Toggle Button - Outside AnimatePresence to prevent hiding */}
       {!isMobile && (
         <motion.button
@@ -488,7 +508,8 @@ const getSectionTitle = (section) => {
     calculator: 'Calorie Calculator',
     'food-tracker': 'Food Tracker',
     'cardio-tracker': 'Log Cardio',
-    'meal-plan': 'Meal Plan'
+    'meal-plan': 'Meal Plan',
+    'monthly-progress': 'Monthly Progress'
   }
   return titles[section] || 'Dashboard'
 }
@@ -505,6 +526,8 @@ const renderActiveSection = (section) => {
       return <CardioTracker />
     case 'meal-plan':
       return <MealPlan />
+    case 'monthly-progress':
+      return <MonthlyProgress />
     default:
       return <DashboardOverview />
   }

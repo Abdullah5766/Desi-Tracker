@@ -30,6 +30,10 @@ export const useFoodStore = create((set, get) => ({
   weeklyTotals: [],
   isLoadingWeekly: false,
 
+  // Monthly totals state
+  monthlyTotals: [],
+  isLoadingMonthly: false,
+
   // Popular foods
   popularFoods: [],
   isLoadingPopular: false,
@@ -222,6 +226,152 @@ export const useFoodStore = create((set, get) => ({
     } catch (error) {
       console.error('📊 Failed to fetch weekly totals:', error)
       set({ isLoadingWeekly: false })
+    }
+  },
+
+  // Get user's first tracking date by searching backwards
+  getUserFirstTrackingDate: async () => {
+    try {
+      // Load custom food entries first
+      get().loadCustomFoodEntries()
+      
+      // Check for the earliest custom food entry
+      const { customFoodEntries } = get()
+      let earliestCustomDate = null
+      
+      if (customFoodEntries.length > 0) {
+        const customDates = customFoodEntries.map(entry => new Date(entry.date))
+        earliestCustomDate = new Date(Math.min(...customDates))
+      }
+      
+      // Search backwards from today to find the first API entry
+      let earliestApiDate = null
+      const today = new Date()
+      
+      // Search up to 60 days back to find first entry
+      for (let i = 0; i < 60; i++) {
+        const checkDate = new Date(today.getFullYear(), today.getMonth(), today.getDate() - i)
+        const dateString = checkDate.getFullYear() + '-' + 
+                          String(checkDate.getMonth() + 1).padStart(2, '0') + '-' + 
+                          String(checkDate.getDate()).padStart(2, '0')
+        
+        try {
+          const response = await api.get(`/food/entries?date=${dateString}&limit=1`)
+          if (response.data.data.entries && response.data.data.entries.length > 0) {
+            earliestApiDate = new Date(dateString + 'T00:00:00')
+            // Continue searching to find even earlier entries
+          }
+        } catch (error) {
+          // Continue searching even if this date fails
+          continue
+        }
+      }
+      
+      // Determine the earliest date between custom and API entries
+      let firstTrackingDate = null
+      if (earliestCustomDate && earliestApiDate) {
+        firstTrackingDate = earliestCustomDate < earliestApiDate ? earliestCustomDate : earliestApiDate
+      } else if (earliestCustomDate) {
+        firstTrackingDate = earliestCustomDate
+      } else if (earliestApiDate) {
+        firstTrackingDate = earliestApiDate
+      }
+      
+      return firstTrackingDate
+    } catch (error) {
+      console.error('Failed to get first tracking date:', error)
+      return null
+    }
+  },
+
+  // Monthly totals functions
+  fetchMonthlyTotals: async () => {
+    console.log('🚀 fetchMonthlyTotals called')
+    set({ isLoadingMonthly: true })
+    
+    try {
+      // Load custom food entries first
+      get().loadCustomFoodEntries()
+      
+      // Get past 30 days (simplified approach)
+      const today = new Date()
+      const monthlyData = []
+      
+      for (let i = 29; i >= 0; i--) {
+        const date = new Date(today.getFullYear(), today.getMonth(), today.getDate() - i)
+        const dateString = date.getFullYear() + '-' + 
+                          String(date.getMonth() + 1).padStart(2, '0') + '-' + 
+                          String(date.getDate()).padStart(2, '0')
+        
+        try {
+          console.log(`📊 Fetching monthly entries for ${dateString}...`)
+          const response = await api.get(`/food/entries?date=${dateString}&limit=100`)
+          const { entries } = response.data.data
+          
+          // Get custom food entries for this date
+          const customEntries = get().getCustomFoodEntriesForDate(dateString)
+          console.log(`📊 Found ${entries.length} API entries and ${customEntries.length} custom entries for ${dateString}`)
+          
+          // Combine API and custom entries
+          const allEntries = [...entries, ...customEntries]
+          
+          // Calculate totals
+          const dayTotals = allEntries.reduce((acc, entry) => {
+            if (entry.nutritionalValues) {
+              acc.calories += entry.nutritionalValues.calories || 0
+              acc.protein += entry.nutritionalValues.protein || 0
+              acc.carbs += entry.nutritionalValues.carbs || 0
+              acc.fat += entry.nutritionalValues.fat || 0
+            }
+            return acc
+          }, { calories: 0, protein: 0, carbs: 0, fat: 0 })
+          
+          monthlyData.push({
+            date: dateString,
+            calories: Math.round(dayTotals.calories),
+            protein: Math.round(dayTotals.protein * 10) / 10,
+            carbs: Math.round(dayTotals.carbs * 10) / 10,
+            fat: Math.round(dayTotals.fat * 10) / 10,
+            entries: allEntries.length
+          })
+          
+        } catch (error) {
+          console.error(`📊 Failed to fetch monthly data for ${dateString}:`, error)
+          
+          // Still check for custom entries even if API fails
+          const customEntries = get().getCustomFoodEntriesForDate(dateString)
+          console.log(`📊 Found ${customEntries.length} custom entries for ${dateString} (API failed)`)
+          
+          const dayTotals = customEntries.reduce((acc, entry) => {
+            if (entry.nutritionalValues) {
+              acc.calories += entry.nutritionalValues.calories || 0
+              acc.protein += entry.nutritionalValues.protein || 0
+              acc.carbs += entry.nutritionalValues.carbs || 0
+              acc.fat += entry.nutritionalValues.fat || 0
+            }
+            return acc
+          }, { calories: 0, protein: 0, carbs: 0, fat: 0 })
+          
+          monthlyData.push({
+            date: dateString,
+            calories: Math.round(dayTotals.calories),
+            protein: Math.round(dayTotals.protein * 10) / 10,
+            carbs: Math.round(dayTotals.carbs * 10) / 10,
+            fat: Math.round(dayTotals.fat * 10) / 10,
+            entries: customEntries.length
+          })
+        }
+      }
+      
+      console.log('📊 Final monthly data:', monthlyData)
+      
+      set({
+        monthlyTotals: monthlyData,
+        isLoadingMonthly: false
+      })
+    } catch (error) {
+      console.error('📊 Failed to fetch monthly totals:', error)
+      set({ isLoadingMonthly: false })
     }
   },
 

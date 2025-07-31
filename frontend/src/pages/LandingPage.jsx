@@ -14,6 +14,10 @@ import { useAuthStore } from '../stores/authStore'
 import Modal from '../components/common/Modal'
 import LoadingSpinner from '../components/common/LoadingSpinner'
 import heroImage from '../assets/abdimg-removebg-preview.png'
+import friendPhoto1 from '../assets/WhatsApp Image 2025-07-31 at 15.09.00.jpeg'
+import friendPhoto2 from '../assets/WhatsApp Image 2025-07-31 at 15.09.01.jpeg'
+import friendPhoto3 from '../assets/WhatsApp Image 2025-07-31 at 15.09.01 (1).jpeg'
+import friendPhoto4 from '../assets/WhatsApp Image 2025-07-31 at 15.09.01 (2).jpeg'
 
 // Animation variants
 const fadeInUp = {
@@ -105,9 +109,9 @@ const LandingPage = () => {
       </motion.nav>
 
       {/* Hero Section */}
-      <section className="pt-20 pb-24 px-4 sm:px-6 lg:px-8 relative">
-        {/* Bottom shadow gradient */}
-        <div className="absolute bottom-0 left-0 right-0 h-32 bg-gradient-to-t from-gray-800 via-gray-900/50 to-transparent pointer-events-none"></div>
+      <section className="pt-20 pb-24 px-4 sm:px-6 lg:px-8 relative overflow-hidden">
+        {/* Smooth gradient overlay */}
+        <div className="absolute bottom-0 left-0 right-0 h-64 bg-gradient-to-t from-gray-800 via-gray-900/30 to-transparent pointer-events-none z-20"></div>
         <div className="max-w-7xl mx-auto relative z-10">
           <div className="grid lg:grid-cols-2 gap-12 items-center">
             {/* Left Column - Text Content */}
@@ -274,9 +278,133 @@ const LandingPage = () => {
               >
                 <FoodSample name="Roti" calories="265 cal per 100g" />
                 <FoodSample name="Naan" calories="275 cal per 100g" />
-                <FoodSample name="Goat Meat(Raan)" calories="122 cal per 100g" />
+                <FoodSample name="Mutton Raan" calories="122 cal per 100g" />
                 <FoodSample name="Desi Ghee" calories="124 cal per tbsp (14g)" />
-                <FoodSample name="Goat Ribs" calories="180 cal per 100g" />
+                <FoodSample name="Mutton Chops" calories="180 cal per 100g" />
+              </motion.div>
+            </motion.div>
+          </div>
+        </div>
+      </section>
+
+      {/* Fun Section with Friend Pics */}
+      <section className="py-20 px-4 sm:px-6 lg:px-8 bg-gray-800">
+        <div className="max-w-7xl mx-auto">
+          <div className="grid lg:grid-cols-2 gap-12 items-center">
+            {/* Left Column - Fun Text Content */}
+            <motion.div
+              initial={{ opacity: 0, x: -60 }}
+              whileInView={{ opacity: 1, x: 0 }}
+              transition={{ duration: 0.8 }}
+              viewport={{ once: true, margin: "-100px" }}
+            >
+              <motion.h2 
+                className="text-4xl font-bold text-white mb-6"
+                initial={{ opacity: 0, y: 30 }}
+                whileInView={{ opacity: 1, y: 0 }}
+                transition={{ duration: 0.6 }}
+                viewport={{ once: true, margin: "-100px" }}
+              >
+                Are you tired of all{' '}
+                <span className="text-gradient">this?</span>
+              </motion.h2>
+              <motion.p 
+                className="text-xl text-gray-300 mb-6"
+                initial={{ opacity: 0, y: 30 }}
+                whileInView={{ opacity: 1, y: 0 }}
+                transition={{ duration: 0.6, delay: 0.2 }}
+                viewport={{ once: true, margin: "-100px" }}
+              >
+                Tired of getting rejected from the love of your life just 
+                because you are from South Pakistan Or sending hand-bags as gifts that are 
+                worth 50k just to see a mere act of love from them Or eating 
+                excessive amount of silajeet to achieve the health benefits, 
+                Good news for you! <span className="text-gradient">DesiTracker?</span> is here to help you so you don't have to face 
+                these problems.
+                
+              </motion.p>
+             
+              <motion.button
+                onClick={handleGetStarted}
+                className="btn-primary text-lg px-8 py-3 flex items-center space-x-2"
+                initial={{ opacity: 0, y: 20 }}
+                whileInView={{ opacity: 1, y: 0 }}
+                transition={{ duration: 0.6, delay: 0.6 }}
+                viewport={{ once: true, margin: "-100px" }}
+                whileHover={{ scale: 1.05 }}
+                whileTap={{ scale: 0.95 }}
+              >
+                <span>Stop Looking Like This</span>
+                <ArrowRight size={20} />
+              </motion.button>
+            </motion.div>
+
+            {/* Right Column - Friend Photos */}
+            <motion.div 
+              className="grid grid-cols-2 gap-4"
+              initial={{ opacity: 0, x: 60 }}
+              whileInView={{ opacity: 1, x: 0 }}
+              transition={{ duration: 0.8 }}
+              viewport={{ once: true, margin: "-100px" }}
+            >
+              <motion.div 
+                className="rounded-lg aspect-square overflow-hidden border-2 border-gray-600"
+                initial={{ opacity: 0, scale: 0.8 }}
+                whileInView={{ opacity: 1, scale: 1 }}
+                transition={{ duration: 0.6, delay: 0.2 }}
+                viewport={{ once: true, margin: "-100px" }}
+                whileHover={{ scale: 1.05 }}
+              >
+                <img
+                  src={friendPhoto1}
+                  alt="Friend transformation before"
+                  className="w-full h-full object-cover"
+                />
+              </motion.div>
+              
+              <motion.div 
+                className="rounded-lg aspect-square overflow-hidden border-2 border-gray-600"
+                initial={{ opacity: 0, scale: 0.8 }}
+                whileInView={{ opacity: 1, scale: 1 }}
+                transition={{ duration: 0.6, delay: 0.4 }}
+                viewport={{ once: true, margin: "-100px" }}
+                whileHover={{ scale: 1.05 }}
+              >
+                <img
+                  src={friendPhoto2}
+                  alt="Friend transformation before"
+                  className="w-full h-full object-cover"
+                />
+              </motion.div>
+              
+              <motion.div 
+                className="rounded-lg aspect-square overflow-hidden border-2 border-gray-600"
+                initial={{ opacity: 0, scale: 0.8 }}
+                whileInView={{ opacity: 1, scale: 1 }}
+                transition={{ duration: 0.6, delay: 0.6 }}
+                viewport={{ once: true, margin: "-100px" }}
+                whileHover={{ scale: 1.05 }}
+              >
+                <img
+                  src={friendPhoto3}
+                  alt="Friend transformation before"
+                  className="w-full h-full object-cover"
+                />
+              </motion.div>
+              
+              <motion.div 
+                className="rounded-lg aspect-square overflow-hidden border-2 border-gray-600"
+                initial={{ opacity: 0, scale: 0.8 }}
+                whileInView={{ opacity: 1, scale: 1 }}
+                transition={{ duration: 0.6, delay: 0.8 }}
+                viewport={{ once: true, margin: "-100px" }}
+                whileHover={{ scale: 1.05 }}
+              >
+                <img
+                  src={friendPhoto4}
+                  alt="Friend transformation before"
+                  className="w-full h-full object-cover"
+                />
               </motion.div>
             </motion.div>
           </div>

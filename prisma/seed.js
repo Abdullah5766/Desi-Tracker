@@ -22,7 +22,7 @@ const meat = [
     servingUnit: "100 grams"
   },
   {
-    name: "Goat Leg (Uncooked)",
+    name: "Mutton Leg (Uncooked)",
     category: "meat",
     calories: 122,
     protein: 22,
@@ -31,7 +31,7 @@ const meat = [
     servingUnit: "100 grams"
   },
   {
-    name: "Goat Shoulder (Uncooked)",
+    name: "Mutton Shoulder (Uncooked)",
     category: "meat",
     calories: 160,
     protein: 21,
@@ -40,7 +40,7 @@ const meat = [
     servingUnit: "100 grams"
   },
   {
-    name: "Goat Ribs (Uncooked)",
+    name: "Mutton Ribs (Uncooked)",
     category: "meat",
     calories: 180,
     protein: 20,
@@ -49,7 +49,7 @@ const meat = [
     servingUnit: "100 grams"
   },
   {
-    name: "Goat Neck (Uncooked)",
+    name: "Mutton Neck (Uncooked)",
     category: "meat",
     calories: 170,
     protein: 21,
@@ -58,7 +58,7 @@ const meat = [
     servingUnit: "100 grams"
   },
   {
-    name: "Goat Loin (Uncooked)",
+    name: "Mutton Loin (Uncooked)",
     category: "meat",
     calories: 130,
     protein: 22,
@@ -67,7 +67,7 @@ const meat = [
     servingUnit: "100 grams"
   },
   {
-    name: "Goat Liver (Uncooked)",
+    name: "Mutton Liver (Uncooked)",
     category: "meat",
     calories: 128,
     protein: 21,
@@ -76,7 +76,7 @@ const meat = [
     servingUnit: "100 grams"
   },
   {
-    name: "Goat Kidney (Uncooked)",
+    name: "Mutton Kidney (Uncooked)",
     category: "meat",
     calories: 120,
     protein: 20,
@@ -85,7 +85,7 @@ const meat = [
     servingUnit: "100 grams"
   },
   {
-    name: "Goat Heart (Uncooked)",
+    name: "Mutton Heart (Uncooked)",
     category: "meat",
     calories: 125,
     protein: 20,
@@ -94,7 +94,7 @@ const meat = [
     servingUnit: "100 grams"
   },
   {
-    name: "Goat Brain (Uncooked)",
+    name: "Mutton Brain (Uncooked)",
     category: "meat",
     calories: 310,
     protein: 12,
@@ -378,8 +378,19 @@ const meat = [
   calories: 100,
   protein: 18,
   carbs: 0,
+  
   fat: 3.5,
   servingUnit: "100 grams"
+},
+
+{
+  name: "Whey Protein (1 scoop)",
+  category: "protein",
+  calories: 120, // average for standard whey protein
+  protein: 24,   // grams
+  carbs: 3,      // grams
+  fat: 1.5,      // grams
+  servingUnit: "1 scoop (30g)"
 }
 
 
@@ -637,6 +648,24 @@ const grains=[
   fat: 0.3,
   servingUnit: "100 grams"
 },
+{
+  name: "White Bread (All brands)",
+  category: "grain",
+  calories: 75,
+  protein: 3,
+  carbs: 13,
+  fat: 1,
+  servingUnit: "1 slice (28g)"
+},
+{
+  name: "Brown Bread (All brands)",
+  category: "grain",
+  calories: 75,
+  protein: 3,
+  carbs: 13,
+  fat: 1,
+  servingUnit: "1 slice (28g)"
+},
 
 {
   name: "Roti (Whole Wheat, Cooked)",
@@ -645,6 +674,16 @@ const grains=[
   protein: 9,
   carbs: 49,
   fat: 6,
+  servingUnit: "100 grams"
+},
+
+{
+  name: "Paratha Homemade (Whole Wheat, Cooked)",
+  category: "grain",
+  calories: 650,
+  protein: 9,
+  carbs: 49,
+  fat: 48,
   servingUnit: "100 grams"
 },
 
@@ -888,6 +927,15 @@ const vegetables=
     fat: 0.1,
     servingUnit: "100 grams"
   },
+  {
+  name: "Sweet Potato (boiled, no skin)",
+  category:"vegetable",
+  calories: 86,
+  protein: 1.6, // grams
+  fat: 0.1,     // grams
+  carbs: 20 ,  // grams
+  servingUnit: "per 100g"
+},
   {
     name: "Onion",
     category: "vegetable",
