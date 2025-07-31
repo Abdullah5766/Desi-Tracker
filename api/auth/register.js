@@ -2,7 +2,15 @@ const { PrismaClient } = require('@prisma/client')
 const bcrypt = require('bcryptjs')
 const jwt = require('jsonwebtoken')
 
-const prisma = new PrismaClient()
+// Global Prisma instance for serverless
+let prisma
+
+if (!global.prisma) {
+  global.prisma = new PrismaClient({
+    log: ['error'],
+  })
+}
+prisma = global.prisma
 
 module.exports = async (req, res) => {
   // Enable CORS
@@ -74,8 +82,11 @@ module.exports = async (req, res) => {
 
   } catch (error) {
     console.error('Registration error:', error)
-    res.status(500).json({ message: 'Internal server error' })
+    res.status(500).json({ 
+      message: 'Internal server error',
+      error: process.env.NODE_ENV === 'development' ? error.message : 'Server error'
+    })
   } finally {
-    await prisma.$disconnect()
+    // Don't disconnect in serverless - keep connection alive
   }
 }
