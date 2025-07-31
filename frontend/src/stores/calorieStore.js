@@ -155,8 +155,8 @@ export const useCalorieStore = create(
         if (user.activityLevel && currentState.activityLevel === 'sedentary') updates.activityLevel = user.activityLevel
         if (user.goal && currentState.goal === 'maintain') updates.goal = user.goal
 
-        // Only load calculated results if not already calculated and persisted
-        if (user.calorieGoal && !currentState.calculatedCalories) {
+        // Only load calculated results if they exist in user profile AND not already calculated
+        if (user.calorieGoal && user.calorieGoal > 0 && !currentState.calculatedCalories) {
           updates.calculatedCalories = user.calorieGoal
           updates.calculatedGoal = user.goal || 'maintain'
           updates.macros = {
@@ -169,6 +169,21 @@ export const useCalorieStore = create(
         if (Object.keys(updates).length > 0) {
           set(updates)
         }
+      },
+
+      // Clear all calculator data for new users
+      clearCalculatorData: () => {
+        set({
+          age: '',
+          weight: '',
+          height: '',
+          gender: 'male',
+          activityLevel: 'sedentary',
+          goal: 'maintain',
+          calculatedCalories: null,
+          calculatedGoal: null,
+          macros: { protein: 0, carbs: 0, fat: 0 }
+        })
       }
     }),
     {

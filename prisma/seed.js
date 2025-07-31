@@ -1021,7 +1021,6 @@ const beverages=[
 }
 ]
 
-
 const fastFood=[
 {
   name: "Zinger Burger",
@@ -1080,7 +1079,37 @@ const fastFood=[
 
 ]
 
+const condiment=[
+  {
+  name: "Sugar",
+  category: "condiment",
+  calories: 48,
+  protein: 0,
+  carbs: 12.5,
+  fat: 0,
+  servingUnit: "1 tbsp (14g)"
+},
 
+{
+  name: "Mayonnaise",
+  category: "condiment",
+  calories: 90,
+  protein: 0,
+  carbs: 0,
+  fat: 10,
+  servingUnit: "1 tbsp (14g)"
+},
+{
+  name: "Ketchup",
+  category: "condiment",
+  calories: 20,
+  protein: 0,
+  carbs: 5,
+  fat: 0,
+  servingUnit: "1 tbsp (14g)"
+}
+
+]
 
 
 // Helper function to calculate serving size from serving unit
@@ -1104,10 +1133,9 @@ const getServingSize = (servingUnit) => {
 async function main() {
   console.log('🌱 Starting seed...');
 
-  // Clear existing data
+  // Clear existing food data only (preserve users)
   await prisma.foodEntry.deleteMany();
   await prisma.food.deleteMany();
-  await prisma.user.deleteMany();
 
   console.log('🗑️  Cleared existing data');
 
@@ -1229,6 +1257,19 @@ async function main() {
   }
   totalItems += fastFood.length;
   console.log(`✅ Added ${fastFood.length} fast food items`);
+
+  // Seed condiment category
+  console.log('🧂 Seeding condiments...');
+  for (const food of condiment) {
+    await prisma.food.create({
+      data: {
+        ...food,
+        servingSize: getServingSize(food.servingUnit)
+      }
+    });
+  }
+  totalItems += condiment.length;
+  console.log(`✅ Added ${condiment.length} condiment items`);
 
   console.log('\n' + '='.repeat(50));
   console.log('🎉 Seed completed successfully!');

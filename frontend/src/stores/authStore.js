@@ -20,6 +20,15 @@ export const useAuthStore = create(
           })
 
           const { user, token } = response.data.data
+          const currentState = get()
+
+          // If this is a different user than the previous one, clear persisted data
+          if (currentState.user && currentState.user.id !== user.id) {
+            const { useCalorieStore } = await import('./calorieStore')
+            const { useFoodStore } = await import('./foodStore')
+            useCalorieStore.getState().clearCalculatorData()
+            useFoodStore.getState().resetStore()
+          }
 
           // Set auth state
           set({
@@ -54,6 +63,13 @@ export const useAuthStore = create(
 
           const { user, token } = response.data.data
 
+          // Clear any persisted data for new user
+          // Import at runtime to avoid circular dependencies
+          const { useCalorieStore } = await import('./calorieStore')
+          const { useFoodStore } = await import('./foodStore')
+          useCalorieStore.getState().clearCalculatorData()
+          useFoodStore.getState().resetStore()
+
           // Set auth state
           set({
             user,
@@ -77,7 +93,7 @@ export const useAuthStore = create(
       },
 
       logout: () => {
-        // Clear auth state
+        // Clear auth state (but keep calculator data for when user logs back in)
         set({
           user: null,
           token: null,
@@ -92,7 +108,7 @@ export const useAuthStore = create(
       },
 
       checkAuth: async () => {
-        const { token } = get()
+        const { token, user: currentUser } = get()
         
         if (!token) {
           set({ isLoading: false })
@@ -106,6 +122,14 @@ export const useAuthStore = create(
         try {
           const response = await api.post('/auth/verify', { token })
           const { user } = response.data.data
+
+          // If this is a different user than what's persisted, clear data
+          if (currentUser && currentUser.id !== user.id) {
+            const { useCalorieStore } = await import('./calorieStore')
+            const { useFoodStore } = await import('./foodStore')
+            useCalorieStore.getState().clearCalculatorData()
+            useFoodStore.getState().resetStore()
+          }
 
           set({
             user,

@@ -8,9 +8,18 @@ export const useCardioStore = create((set, get) => ({
   isLoadingTypes: false,
 
   // Cardio entries state
-  currentTrackingDate: new Date().toISOString().split('T')[0],
+  currentTrackingDate: (() => {
+    const today = new Date()
+    return today.getFullYear() + '-' + 
+           String(today.getMonth() + 1).padStart(2, '0') + '-' + 
+           String(today.getDate()).padStart(2, '0')
+  })(),
   todayEntries: [],
   isLoadingEntries: false,
+
+  // Weekly totals state
+  weeklyTotals: [],
+  isLoadingWeekly: false,
 
   // Modal state
   isAddCardioModalOpen: false,
@@ -111,6 +120,9 @@ export const useCardioStore = create((set, get) => ({
         get().calculateDailyTotals()
       }
 
+      // Refresh weekly totals to update the chart
+      get().fetchWeeklyTotals()
+
       toast.success('Cardio entry added successfully!')
       return { success: true, data: entry }
 
@@ -140,6 +152,9 @@ export const useCardioStore = create((set, get) => ({
       // Recalculate daily totals
       get().calculateDailyTotals()
 
+      // Refresh weekly totals to update the chart
+      get().fetchWeeklyTotals()
+
       toast.success('Cardio entry updated!')
       return { success: true, data: entry }
 
@@ -163,6 +178,9 @@ export const useCardioStore = create((set, get) => ({
 
       // Recalculate daily totals
       get().calculateDailyTotals()
+
+      // Refresh weekly totals to update the chart
+      get().fetchWeeklyTotals()
 
       toast.success('Cardio entry deleted!')
       return { success: true }
@@ -219,7 +237,10 @@ export const useCardioStore = create((set, get) => ({
   },
 
   checkAndUpdateDate: () => {
-    const currentDate = new Date().toISOString().split('T')[0]
+    const today = new Date()
+    const currentDate = today.getFullYear() + '-' + 
+                       String(today.getMonth() + 1).padStart(2, '0') + '-' + 
+                       String(today.getDate()).padStart(2, '0')
     const { currentTrackingDate } = get()
     
     if (currentDate !== currentTrackingDate) {
@@ -238,17 +259,100 @@ export const useCardioStore = create((set, get) => ({
     }
   },
 
+  // Fetch weekly cardio totals
+  fetchWeeklyTotals: async () => {
+    console.log('🚀 fetchWeeklyCardioTotals called')
+    set({ isLoadingWeekly: true })
+    
+    try {
+      // Get current week (Monday to Sunday) - use local timezone
+      const today = new Date()
+      const currentWeekStart = new Date(today.getFullYear(), today.getMonth(), today.getDate())
+      currentWeekStart.setDate(today.getDate() - today.getDay() + 1) // Start from Monday
+      
+      const weeklyData = []
+      
+      for (let i = 0; i < 7; i++) {
+        const date = new Date(currentWeekStart.getFullYear(), currentWeekStart.getMonth(), currentWeekStart.getDate() + i)
+        const dateString = date.getFullYear() + '-' + 
+                          String(date.getMonth() + 1).padStart(2, '0') + '-' + 
+                          String(date.getDate()).padStart(2, '0')
+        
+        try {
+          console.log(`🏃‍♂️ Fetching cardio entries for ${dateString}...`)
+          const response = await api.get(`/cardio/entries?date=${dateString}&limit=100`)
+          const { entries } = response.data.data
+          
+          // Calculate totals
+          const dayTotals = entries.reduce((acc, entry) => {
+            acc.totalDuration += entry.duration || 0
+            acc.totalCalories += entry.caloriesBurned || 0
+            acc.entriesCount += 1
+            return acc
+          }, { totalDuration: 0, totalCalories: 0, entriesCount: 0 })
+
+          const dayName = date.toLocaleDateString('en-US', { weekday: 'long' })
+          
+          weeklyData.push({
+            date: dateString,
+            dayName,
+            totalDuration: dayTotals.totalDuration,
+            totalCalories: Math.round(dayTotals.totalCalories),
+            entriesCount: dayTotals.entriesCount
+          })
+          
+        } catch (error) {
+          console.error(`🏃‍♂️ Failed to fetch cardio data for ${dateString}:`, error)
+          // Add empty day data
+          const dayName = date.toLocaleDateString('en-US', { weekday: 'long' })
+          weeklyData.push({
+            date: dateString,
+            dayName,
+            totalDuration: 0,
+            totalCalories: 0,
+            entriesCount: 0
+          })
+        }
+      }
+      
+      console.log('🏃‍♂️ Final weekly cardio data:', weeklyData)
+      
+      set({
+        weeklyTotals: weeklyData,
+        isLoadingWeekly: false
+      })
+
+    } catch (error) {
+      console.error('🏃‍♂️ Failed to fetch weekly cardio totals:', error)
+      set({ isLoadingWeekly: false })
+    }
+  },
+
   getCurrentTrackingDateLabel: () => {
     const { currentTrackingDate } = get()
-    const today = new Date().toISOString().split('T')[0]
-    const yesterday = new Date(Date.now() - 86400000).toISOString().split('T')[0]
-    const tomorrow = new Date(Date.now() + 86400000).toISOString().split('T')[0]
     
-    if (currentTrackingDate === today) {
+    const today = new Date()
+    const todayString = today.getFullYear() + '-' + 
+                       String(today.getMonth() + 1).padStart(2, '0') + '-' + 
+                       String(today.getDate()).padStart(2, '0')
+    
+    const yesterday = new Date(today)
+    yesterday.setDate(today.getDate() - 1)
+    const yesterdayString = yesterday.getFullYear() + '-' + 
+                           String(yesterday.getMonth() + 1).padStart(2, '0') + '-' + 
+                           String(yesterday.getDate()).padStart(2, '0')
+    
+    const tomorrow = new Date(today)
+    tomorrow.setDate(today.getDate() + 1)
+    const tomorrowString = tomorrow.getFullYear() + '-' + 
+                          String(tomorrow.getMonth() + 1).padStart(2, '0') + '-' + 
+                          String(tomorrow.getDate()).padStart(2, '0')
+    
+    if (currentTrackingDate === todayString) {
       return 'Today'
-    } else if (currentTrackingDate === yesterday) {
+    } else if (currentTrackingDate === yesterdayString) {
       return 'Yesterday'
-    } else if (currentTrackingDate === tomorrow) {
+    } else if (currentTrackingDate === tomorrowString) {
       return 'Tomorrow'
     } else {
       return new Date(currentTrackingDate).toLocaleDateString('en-US', {
@@ -261,11 +365,17 @@ export const useCardioStore = create((set, get) => ({
 
   // Reset store
   resetStore: () => {
+    const today = new Date()
+    const currentDate = today.getFullYear() + '-' + 
+                       String(today.getMonth() + 1).padStart(2, '0') + '-' + 
+                       String(today.getDate()).padStart(2, '0')
     set({
       cardioTypes: [],
       isLoadingTypes: false,
       todayEntries: [],
       isLoadingEntries: false,
+      weeklyTotals: [],
+      isLoadingWeekly: false,
       dailyTotals: {
         totalDuration: 0,
         totalCalories: 0,
@@ -273,7 +383,7 @@ export const useCardioStore = create((set, get) => ({
       },
       isAddCardioModalOpen: false,
       selectedCardioType: null,
-      currentTrackingDate: new Date().toISOString().split('T')[0]
+      currentTrackingDate: currentDate
     })
   }
 }))

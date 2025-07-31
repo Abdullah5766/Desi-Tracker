@@ -10,7 +10,12 @@ export const useFoodStore = create((set, get) => ({
   searchError: null,
 
   // Food entries state
-  currentTrackingDate: new Date().toISOString().split('T')[0],
+  currentTrackingDate: (() => {
+    const today = new Date()
+    return today.getFullYear() + '-' + 
+           String(today.getMonth() + 1).padStart(2, '0') + '-' + 
+           String(today.getDate()).padStart(2, '0')
+  })(),
   todayEntries: [],
   dailyTotals: {
     calories: 0,
@@ -33,6 +38,54 @@ export const useFoodStore = create((set, get) => ({
   isAddFoodModalOpen: false,
   selectedFood: null,
   selectedMealType: 'breakfast',
+
+  // Custom foods storage (persisted in localStorage)
+  customFoodEntries: [],
+
+  // Custom food persistence functions
+  loadCustomFoodEntries: () => {
+    try {
+      const stored = localStorage.getItem('desi-tracker-custom-foods')
+      if (stored) {
+        const customEntries = JSON.parse(stored)
+        set({ customFoodEntries: customEntries })
+        return customEntries
+      }
+    } catch (error) {
+      console.error('Failed to load custom food entries:', error)
+    }
+    return []
+  },
+
+  saveCustomFoodEntry: (entry) => {
+    try {
+      const currentState = get()
+      const updatedEntries = [...currentState.customFoodEntries, entry]
+      set({ customFoodEntries: updatedEntries })
+      localStorage.setItem('desi-tracker-custom-foods', JSON.stringify(updatedEntries))
+    } catch (error) {
+      console.error('Failed to save custom food entry:', error)
+    }
+  },
+
+  removeCustomFoodEntry: (entryId) => {
+    try {
+      const currentState = get()
+      const updatedEntries = currentState.customFoodEntries.filter(e => e.id !== entryId)
+      set({ customFoodEntries: updatedEntries })
+      localStorage.setItem('desi-tracker-custom-foods', JSON.stringify(updatedEntries))
+    } catch (error) {
+      console.error('Failed to remove custom food entry:', error)
+    }
+  },
+
+  getCustomFoodEntriesForDate: (dateString) => {
+    const { customFoodEntries } = get()
+    return customFoodEntries.filter(entry => {
+      const entryDate = entry.date.split('T')[0] // Extract YYYY-MM-DD from ISO string
+      return entryDate === dateString
+    })
+  },
 
   // Search functions
   setSearchQuery: (query) => set({ searchQuery: query }),
@@ -79,25 +132,35 @@ export const useFoodStore = create((set, get) => ({
     set({ isLoadingWeekly: true })
     
     try {
-      // Get current week (Monday to Sunday)
+      // Load custom food entries first
+      get().loadCustomFoodEntries()
+      // Get current week (Monday to Sunday) - use local timezone
       const today = new Date()
-      const currentWeekStart = new Date(today)
+      const currentWeekStart = new Date(today.getFullYear(), today.getMonth(), today.getDate())
       currentWeekStart.setDate(today.getDate() - today.getDay() + 1) // Start from Monday
       
       const weeklyData = []
       
       for (let i = 0; i < 7; i++) {
-        const date = new Date(currentWeekStart)
-        date.setDate(currentWeekStart.getDate() + i)
-        const dateString = date.toISOString().split('T')[0]
+        const date = new Date(currentWeekStart.getFullYear(), currentWeekStart.getMonth(), currentWeekStart.getDate() + i)
+        const dateString = date.getFullYear() + '-' + 
+                          String(date.getMonth() + 1).padStart(2, '0') + '-' + 
+                          String(date.getDate()).padStart(2, '0')
         
         try {
           console.log(`📊 Fetching entries for ${dateString}...`)
           const response = await api.get(`/food/entries?date=${dateString}&limit=100`)
           const { entries } = response.data.data
           
+          // Get custom food entries for this date
+          const customEntries = get().getCustomFoodEntriesForDate(dateString)
+          console.log(`📊 Found ${entries.length} API entries and ${customEntries.length} custom entries for ${dateString}`)
+          
+          // Combine API and custom entries
+          const allEntries = [...entries, ...customEntries]
+          
           // Calculate totals using the same logic as calculateDailyTotals
-          const dayTotals = entries.reduce((acc, entry) => {
+          const dayTotals = allEntries.reduce((acc, entry) => {
             if (entry.nutritionalValues) {
               acc.calories += entry.nutritionalValues.calories || 0
               acc.protein += entry.nutritionalValues.protein || 0
@@ -116,21 +179,35 @@ export const useFoodStore = create((set, get) => ({
             protein: Math.round(dayTotals.protein * 10) / 10,
             carbs: Math.round(dayTotals.carbs * 10) / 10,
             fat: Math.round(dayTotals.fat * 10) / 10,
-            entries: entries.length
+            entries: allEntries.length
           })
           
         } catch (error) {
           console.error(`📊 Failed to fetch data for ${dateString}:`, error)
-          // Add empty day data
+          
+          // Still check for custom entries even if API fails
+          const customEntries = get().getCustomFoodEntriesForDate(dateString)
+          console.log(`📊 Found ${customEntries.length} custom entries for ${dateString} (API failed)`)
+          
+          const dayTotals = customEntries.reduce((acc, entry) => {
+            if (entry.nutritionalValues) {
+              acc.calories += entry.nutritionalValues.calories || 0
+              acc.protein += entry.nutritionalValues.protein || 0
+              acc.carbs += entry.nutritionalValues.carbs || 0
+              acc.fat += entry.nutritionalValues.fat || 0
+            }
+            return acc
+          }, { calories: 0, protein: 0, carbs: 0, fat: 0 })
+          
           const dayName = date.toLocaleDateString('en-US', { weekday: 'long' })
           weeklyData.push({
             date: dateString,
             dayName,
-            calories: 0,
-            protein: 0,
-            carbs: 0,
-            fat: 0,
-            entries: 0
+            calories: Math.round(dayTotals.calories),
+            protein: Math.round(dayTotals.protein * 10) / 10,
+            carbs: Math.round(dayTotals.carbs * 10) / 10,
+            fat: Math.round(dayTotals.fat * 10) / 10,
+            entries: customEntries.length
           })
         }
       }
@@ -248,9 +325,18 @@ export const useFoodStore = create((set, get) => ({
 
   deleteFoodEntry: async (entryId) => {
     try {
-      await api.delete(`/food/entries/${entryId}`)
+      // Check if this is a custom food entry
+      const isCustomEntry = entryId.startsWith('custom_')
+      
+      if (!isCustomEntry) {
+        // Only call API for non-custom entries
+        await api.delete(`/food/entries/${entryId}`)
+      } else {
+        // Remove from localStorage for custom entries
+        get().removeCustomFoodEntry(entryId)
+      }
 
-      // Remove from today's entries
+      // Remove from today's entries (both custom and regular)
       set((state) => ({
         todayEntries: state.todayEntries.filter(e => e.id !== entryId)
       }))
@@ -272,6 +358,75 @@ export const useFoodStore = create((set, get) => ({
     }
   },
 
+  // Add custom food entry (no backend storage)
+  addCustomFoodEntry: async (customFood, quantity, mealType, date = null) => {
+    try {
+      const currentState = get()
+      
+      // Generate a temporary ID for the custom food entry
+      const tempId = `custom_${Date.now()}_${Math.random().toString(36).substring(2, 11)}`
+      
+      // Use current tracking date if no date provided
+      const entryDate = date || currentState.currentTrackingDate
+      
+      // Calculate nutritional values (only calories for custom foods)
+      const totalCalories = customFood.calories * quantity
+      
+      // Create the custom food entry object
+      const customFoodEntry = {
+        id: tempId,
+        date: entryDate + 'T00:00:00.000Z', // Format as ISO string
+        mealType: mealType.toLowerCase(),
+        quantity: quantity,
+        unit: 'serving',
+        nutritionalValues: {
+          calories: totalCalories,
+          protein: 0, // Custom foods don't track macros
+          carbs: 0,
+          fat: 0
+        },
+        food: {
+          ...customFood,
+          id: tempId,
+          servingUnit: 'serving',
+          servingSize: 1
+        },
+        userId: 'custom', // Mark as custom entry
+        foodId: tempId,
+        createdAt: new Date().toISOString(),
+        updatedAt: new Date().toISOString()
+      }
+
+      console.log('📝 Adding custom food entry:', customFoodEntry)
+
+      // Save to localStorage
+      get().saveCustomFoodEntry(customFoodEntry)
+
+      // Add to today's entries if it matches current tracking date
+      const entryDateString = entryDate
+      if (entryDateString === currentState.currentTrackingDate) {
+        console.log('✅ Adding custom food to current tracking date entries')
+        set((state) => ({
+          todayEntries: [customFoodEntry, ...state.todayEntries]
+        }))
+        
+        // Recalculate daily totals
+        get().calculateDailyTotals()
+      }
+
+      // Refresh weekly totals to update the chart
+      get().fetchWeeklyTotals()
+
+      toast.success('Custom food added successfully!')
+      return { success: true, data: customFoodEntry }
+
+    } catch (error) {
+      console.error('❌ Failed to add custom food entry:', error)
+      toast.error('Failed to add custom food')
+      return { success: false, message: 'Failed to add custom food' }
+    }
+  },
+
   // Fetch today's food entries
   fetchTodayEntries: async () => {
     console.log('🚀 fetchTodayEntries called')
@@ -279,13 +434,25 @@ export const useFoodStore = create((set, get) => ({
     try {
       const { currentTrackingDate } = get()
       console.log('🔍 Fetching entries for date:', currentTrackingDate)
+      
+      // Load custom food entries first
+      get().loadCustomFoodEntries()
+      
       const response = await api.get(`/food/entries?date=${currentTrackingDate}&limit=100`)
       console.log('🔍 API response:', response.data)
       const { entries } = response.data.data
-      console.log('🔍 Entries received:', entries)
+      console.log('🔍 API entries received:', entries)
+
+      // Get custom food entries for current date
+      const customEntries = get().getCustomFoodEntriesForDate(currentTrackingDate)
+      console.log('🔍 Custom entries for current date:', customEntries)
+
+      // Combine API and custom entries
+      const allEntries = [...entries, ...customEntries]
+      console.log('🔍 Total combined entries:', allEntries)
 
       set({
-        todayEntries: entries,
+        todayEntries: allEntries,
         isLoadingEntries: false
       })
 
@@ -295,7 +462,25 @@ export const useFoodStore = create((set, get) => ({
     } catch (error) {
       console.error('❌ Failed to fetch today\'s entries:', error)
       console.error('❌ Error details:', error.response?.data)
-      set({ isLoadingEntries: false })
+      
+      // Even if API fails, load custom entries
+      try {
+        get().loadCustomFoodEntries()
+        const { currentTrackingDate } = get()
+        const customEntries = get().getCustomFoodEntriesForDate(currentTrackingDate)
+        console.log('🔍 Loading only custom entries due to API failure:', customEntries)
+        
+        set({
+          todayEntries: customEntries,
+          isLoadingEntries: false
+        })
+        
+        // Calculate daily totals
+        get().calculateDailyTotals()
+      } catch (customError) {
+        console.error('❌ Failed to load custom entries:', customError)
+        set({ isLoadingEntries: false })
+      }
       
       // Show error for debugging
       if (error.response?.status !== 401) {
@@ -387,7 +572,10 @@ export const useFoodStore = create((set, get) => ({
   },
 
   checkAndUpdateDate: () => {
-    const currentDate = new Date().toISOString().split('T')[0]
+    const today = new Date()
+    const currentDate = today.getFullYear() + '-' + 
+                       String(today.getMonth() + 1).padStart(2, '0') + '-' + 
+                       String(today.getDate()).padStart(2, '0')
     const { currentTrackingDate } = get()
     
     if (currentDate !== currentTrackingDate) {
@@ -410,15 +598,29 @@ export const useFoodStore = create((set, get) => ({
 
   getCurrentTrackingDateLabel: () => {
     const { currentTrackingDate } = get()
-    const today = new Date().toISOString().split('T')[0]
-    const yesterday = new Date(Date.now() - 86400000).toISOString().split('T')[0]
-    const tomorrow = new Date(Date.now() + 86400000).toISOString().split('T')[0]
     
-    if (currentTrackingDate === today) {
+    const today = new Date()
+    const todayString = today.getFullYear() + '-' + 
+                       String(today.getMonth() + 1).padStart(2, '0') + '-' + 
+                       String(today.getDate()).padStart(2, '0')
+    
+    const yesterday = new Date(today)
+    yesterday.setDate(today.getDate() - 1)
+    const yesterdayString = yesterday.getFullYear() + '-' + 
+                           String(yesterday.getMonth() + 1).padStart(2, '0') + '-' + 
+                           String(yesterday.getDate()).padStart(2, '0')
+    
+    const tomorrow = new Date(today)
+    tomorrow.setDate(today.getDate() + 1)
+    const tomorrowString = tomorrow.getFullYear() + '-' + 
+                          String(tomorrow.getMonth() + 1).padStart(2, '0') + '-' + 
+                          String(tomorrow.getDate()).padStart(2, '0')
+    
+    if (currentTrackingDate === todayString) {
       return 'Today'
-    } else if (currentTrackingDate === yesterday) {
+    } else if (currentTrackingDate === yesterdayString) {
       return 'Yesterday'
-    } else if (currentTrackingDate === tomorrow) {
+    } else if (currentTrackingDate === tomorrowString) {
       return 'Tomorrow'
     } else {
       return new Date(currentTrackingDate).toLocaleDateString('en-US', {
@@ -442,6 +644,13 @@ export const useFoodStore = create((set, get) => ({
 
   // Reset store
   resetStore: () => {
+    // Clear custom food entries from localStorage when resetting store
+    try {
+      localStorage.removeItem('desi-tracker-custom-foods')
+    } catch (error) {
+      console.error('Failed to clear custom food entries:', error)
+    }
+
     set({
       searchQuery: '',
       searchResults: [],
@@ -462,7 +671,15 @@ export const useFoodStore = create((set, get) => ({
       isLoadingPopular: false,
       isAddFoodModalOpen: false,
       selectedFood: null,
-      selectedMealType: 'breakfast'
+      selectedMealType: 'breakfast',
+      customFoodEntries: [],
+      // Reset tracking date to today
+      currentTrackingDate: (() => {
+        const today = new Date()
+        return today.getFullYear() + '-' + 
+               String(today.getMonth() + 1).padStart(2, '0') + '-' + 
+               String(today.getDate()).padStart(2, '0')
+      })()
     })
   }
 }))

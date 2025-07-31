@@ -8,10 +8,45 @@ import {
   Star,
   CheckCircle
 } from 'lucide-react'
+import { motion } from 'framer-motion'
 import toast from 'react-hot-toast'
 import { useAuthStore } from '../stores/authStore'
 import Modal from '../components/common/Modal'
 import LoadingSpinner from '../components/common/LoadingSpinner'
+import heroImage from '../assets/abdimg-removebg-preview.png'
+
+// Animation variants
+const fadeInUp = {
+  initial: { opacity: 0, y: 60 },
+  animate: { opacity: 1, y: 0 },
+  transition: { duration: 0.6, ease: "easeOut" }
+}
+
+const staggerContainer = {
+  animate: {
+    transition: {
+      staggerChildren: 0.1
+    }
+  }
+}
+
+const slideInLeft = {
+  initial: { opacity: 0, x: -60 },
+  animate: { opacity: 1, x: 0 },
+  transition: { duration: 0.6, ease: "easeOut" }
+}
+
+const slideInRight = {
+  initial: { opacity: 0, x: 60 },
+  animate: { opacity: 1, x: 0 },
+  transition: { duration: 0.6, ease: "easeOut" }
+}
+
+const scaleIn = {
+  initial: { opacity: 0, scale: 0.8 },
+  animate: { opacity: 1, scale: 1 },
+  transition: { duration: 0.5, ease: "easeOut" }
+}
 
 const LandingPage = () => {
   const { login, register, isLoading } = useAuthStore()
@@ -29,14 +64,29 @@ const LandingPage = () => {
   return (
     <div className="min-h-screen bg-gray-900">
       {/* Navigation */}
-      <nav className="bg-gray-800 border-b border-gray-700">
+      <motion.nav 
+        className="bg-gray-800 border-b border-gray-700"
+        initial={{ opacity: 0, y: -20 }}
+        animate={{ opacity: 1, y: 0 }}
+        transition={{ duration: 0.6 }}
+      >
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
           <div className="flex justify-between items-center h-16">
-            <div className="flex items-center space-x-2">
+            <motion.div 
+              className="flex items-center space-x-2"
+              initial={{ opacity: 0, x: -20 }}
+              animate={{ opacity: 1, x: 0 }}
+              transition={{ duration: 0.6, delay: 0.2 }}
+            >
               <ChefHat className="h-8 w-8 text-purple-400" />
               <span className="text-2xl font-bold text-gradient">DesiTracker</span>
-            </div>
-            <div className="flex items-center space-x-4">
+            </motion.div>
+            <motion.div 
+              className="flex items-center space-x-4"
+              initial={{ opacity: 0, x: 20 }}
+              animate={{ opacity: 1, x: 0 }}
+              transition={{ duration: 0.6, delay: 0.2 }}
+            >
               <button
                 onClick={handleLogin}
                 className="btn-outline text-sm"
@@ -49,30 +99,78 @@ const LandingPage = () => {
               >
                 Get Started
               </button>
-            </div>
+            </motion.div>
           </div>
         </div>
-      </nav>
+      </motion.nav>
 
       {/* Hero Section */}
-      <section className="pt-20 pb-32 px-4 sm:px-6 lg:px-8">
-        <div className="max-w-7xl mx-auto text-center">
-          <h1 className="text-4xl md:text-6xl font-bold text-white mb-6">
-            Track Your{' '}
-            <span className="text-gradient">Desi Lifestyle</span>
-          </h1>
-          <p className="text-xl text-gray-300 mb-8 max-w-3xl mx-auto">
-            The first fitness app designed specifically for Pakistani and Desi households. 
-            Track calories, nutrition, and fitness goals with foods you actually eat.
-          </p>
-          <div className="flex flex-col sm:flex-row gap-4 justify-center items-center">
-            <button
-              onClick={handleGetStarted}
-              className="btn-primary text-lg px-8 py-3 flex items-center space-x-2"
+      <section className="pt-20 pb-24 px-4 sm:px-6 lg:px-8 relative">
+        {/* Bottom shadow gradient */}
+        <div className="absolute bottom-0 left-0 right-0 h-32 bg-gradient-to-t from-gray-800 via-gray-900/50 to-transparent pointer-events-none"></div>
+        <div className="max-w-7xl mx-auto relative z-10">
+          <div className="grid lg:grid-cols-2 gap-12 items-center">
+            {/* Left Column - Text Content */}
+            <motion.div 
+              className="text-center lg:text-left"
+              variants={slideInLeft}
+              initial="initial"
+              animate="animate"
             >
-              <span>Get Started</span>
-              <ArrowRight size={20} />
-            </button>
+              <motion.h1 
+                className="text-4xl md:text-5xl lg:text-6xl font-bold text-white mb-6"
+                initial={{ opacity: 0, y: 30 }}
+                animate={{ opacity: 1, y: 0 }}
+                transition={{ duration: 0.8, delay: 0.3 }}
+              >
+                Track Your{' '}
+                <span className="text-gradient">Desi Lifestyle</span>
+              </motion.h1>
+              <motion.p 
+                className="text-xl text-gray-300 mb-8 max-w-2xl"
+                initial={{ opacity: 0, y: 30 }}
+                animate={{ opacity: 1, y: 0 }}
+                transition={{ duration: 0.8, delay: 0.5 }}
+              >
+                The first fitness app designed specifically for Pakistani and Desi households. 
+                Track calories, nutrition, and fitness goals with foods you actually eat.
+              </motion.p>
+              <motion.div 
+                className="flex flex-col sm:flex-row gap-4 justify-center lg:justify-start items-center"
+                initial={{ opacity: 0, y: 30 }}
+                animate={{ opacity: 1, y: 0 }}
+                transition={{ duration: 0.8, delay: 0.7 }}
+              >
+                <motion.button
+                  onClick={handleGetStarted}
+                  className="btn-primary text-lg px-8 py-3 flex items-center space-x-2"
+                  whileHover={{ scale: 1.05 }}
+                  whileTap={{ scale: 0.95 }}
+                >
+                  <span>Get Started</span>
+                  <ArrowRight size={20} />
+                </motion.button>
+              </motion.div>
+            </motion.div>
+
+            {/* Right Column - Hero Image */}
+            <motion.div 
+              className="relative order-first lg:order-last flex justify-center items-start"
+              variants={slideInRight}
+              initial="initial"
+              animate="animate"
+            >
+              <motion.img
+                src={heroImage} 
+                alt="DesiTracker App Preview"
+                className="w-full h-auto object-contain max-h-[70vh] max-w-full"
+                style={{ filter: 'drop-shadow(0 10px 20px rgba(0,0,0,0.3))' }}
+                initial={{ opacity: 0, scale: 0.8 }}
+                animate={{ opacity: 1, scale: 1 }}
+                transition={{ duration: 1, delay: 0.4 }}
+                whileHover={{ scale: 1.02, transition: { duration: 0.3 } }}
+              />
+            </motion.div>
           </div>
         </div>
       </section>
@@ -80,10 +178,22 @@ const LandingPage = () => {
       {/* Features Section */}
       <section className="py-20 px-4 sm:px-6 lg:px-8 bg-gray-800">
         <div className="max-w-7xl mx-auto">
-          <h2 className="text-3xl font-bold text-center text-white mb-12">
+          <motion.h2 
+            className="text-3xl font-bold text-center text-white mb-12"
+            initial={{ opacity: 0, y: 30 }}
+            whileInView={{ opacity: 1, y: 0 }}
+            transition={{ duration: 0.6 }}
+            viewport={{ once: true, margin: "-100px" }}
+          >
             Built for <span className="text-gradient">Desi Families</span>
-          </h2>
-          <div className="grid md:grid-cols-2 lg:grid-cols-4 gap-8">
+          </motion.h2>
+          <motion.div 
+            className="grid md:grid-cols-2 lg:grid-cols-4 gap-8"
+            variants={staggerContainer}
+            initial="initial"
+            whileInView="animate"
+            viewport={{ once: true, margin: "-100px" }}
+          >
             <FeatureCard
               icon={<ChefHat className="h-8 w-8 text-purple-400" />}
               title="Desi Food Database"
@@ -92,7 +202,7 @@ const LandingPage = () => {
             <FeatureCard
               icon={<Target className="h-8 w-8 text-purple-400" />}
               title="Smart Calorie Calculator"
-              description="Calculate your daily calorie needs using the proven Mifflin-St Jeor formula"
+              description="Calculate your daily calorie needs using the proven and most efficient method"
             />
             <FeatureCard
               icon={<TrendingUp className="h-8 w-8 text-purple-400" />}
@@ -104,7 +214,7 @@ const LandingPage = () => {
               title="Family-Friendly"
               description="Designed with Pakistani households in mind, from portion sizes to meal planning"
             />
-          </div>
+          </motion.div>
         </div>
       </section>
 
@@ -112,34 +222,63 @@ const LandingPage = () => {
       <section className="py-20 px-4 sm:px-6 lg:px-8">
         <div className="max-w-7xl mx-auto">
           <div className="grid lg:grid-cols-2 gap-12 items-center">
-            <div>
+            <motion.div
+              initial={{ opacity: 0, x: -60 }}
+              whileInView={{ opacity: 1, x: 0 }}
+              transition={{ duration: 0.8 }}
+              viewport={{ once: true, margin: "-100px" }}
+            >
               <h2 className="text-3xl font-bold text-white mb-6">
                 Why <span className="text-gradient">DesiTracker?</span>
               </h2>
-              <div className="space-y-4">
-                <BenefitItem text="Track biryani, karahi, dal, and other Desi foods accurately" />
+              <motion.div 
+                className="space-y-4"
+                variants={staggerContainer}
+                initial="initial"
+                whileInView="animate"
+                viewport={{ once: true, margin: "-50px" }}
+              >
+                <BenefitItem text="Track Desi foods accurately" />
                 <BenefitItem text="Portion sizes that match real Pakistani servings" />
                 <BenefitItem text="Calculate calories for weight loss, maintenance, or gain" />
-                <BenefitItem text="Simple, beautiful interface designed for daily use" />
-                <BenefitItem text="Free to use with no hidden fees" />
-              </div>
-              <button
+                <BenefitItem text="Track your weekly and monthly progress" />
+                <BenefitItem text="Suggested Meal Plans" />
+              </motion.div>
+              <motion.button
                 onClick={handleGetStarted}
                 className="btn-primary mt-8 text-lg px-8 py-3"
+                initial={{ opacity: 0, y: 20 }}
+                whileInView={{ opacity: 1, y: 0 }}
+                transition={{ duration: 0.6, delay: 0.3 }}
+                viewport={{ once: true, margin: "-100px" }}
+                whileHover={{ scale: 1.05 }}
+                whileTap={{ scale: 0.95 }}
               >
                 Start Tracking Today
-              </button>
-            </div>
-            <div className="bg-gray-800 rounded-lg p-8 border border-gray-700">
+              </motion.button>
+            </motion.div>
+            <motion.div 
+              className="bg-gray-800 rounded-lg p-8 border border-gray-700"
+              initial={{ opacity: 0, x: 60 }}
+              whileInView={{ opacity: 1, x: 0 }}
+              transition={{ duration: 0.8 }}
+              viewport={{ once: true, margin: "-100px" }}
+            >
               <h3 className="text-xl font-semibold text-white mb-4">Sample Foods</h3>
-              <div className="space-y-3">
-                <FoodSample name="Chicken Biryani" calories="290 cal per plate" />
-                <FoodSample name="Dal Chawal" calories="185 cal per bowl" />
-                <FoodSample name="Karahi Chicken" calories="195 cal per serving" />
-                <FoodSample name="Aloo Paratha" calories="320 cal per paratha" />
-                <FoodSample name="Seekh Kebab" calories="285 cal per 2 pieces" />
-              </div>
-            </div>
+              <motion.div 
+                className="space-y-3"
+                variants={staggerContainer}
+                initial="initial"
+                whileInView="animate"
+                viewport={{ once: true, margin: "-50px" }}
+              >
+                <FoodSample name="Roti" calories="265 cal per 100g" />
+                <FoodSample name="Naan" calories="275 cal per 100g" />
+                <FoodSample name="Goat Meat(Raan)" calories="122 cal per 100g" />
+                <FoodSample name="Desi Ghee" calories="124 cal per tbsp (14g)" />
+                <FoodSample name="Goat Ribs" calories="180 cal per 100g" />
+              </motion.div>
+            </motion.div>
           </div>
         </div>
       </section>
@@ -147,33 +286,66 @@ const LandingPage = () => {
       {/* CTA Section */}
       <section className="py-20 px-4 sm:px-6 lg:px-8 bg-gradient-purple">
         <div className="max-w-4xl mx-auto text-center">
-          <h2 className="text-3xl font-bold text-white mb-6">
+          <motion.h2 
+            className="text-3xl font-bold text-white mb-6"
+            initial={{ opacity: 0, y: 30 }}
+            whileInView={{ opacity: 1, y: 0 }}
+            transition={{ duration: 0.6 }}
+            viewport={{ once: true, margin: "-100px" }}
+          >
             Ready to Start Your Fitness Journey?
-          </h2>
-          <p className="text-xl text-purple-100 mb-8">
+          </motion.h2>
+          <motion.p 
+            className="text-xl text-purple-100 mb-8"
+            initial={{ opacity: 0, y: 30 }}
+            whileInView={{ opacity: 1, y: 0 }}
+            transition={{ duration: 0.6, delay: 0.2 }}
+            viewport={{ once: true, margin: "-100px" }}
+          >
             Join thousands of Desi families already tracking their health goals with DesiTracker.
-          </p>
-          <button
+          </motion.p>
+          <motion.button
             onClick={handleGetStarted}
             className="bg-white text-purple-600 hover:bg-gray-100 px-8 py-3 rounded-lg font-semibold text-lg transition-colors"
+            initial={{ opacity: 0, scale: 0.8 }}
+            whileInView={{ opacity: 1, scale: 1 }}
+            transition={{ duration: 0.6, delay: 0.4 }}
+            viewport={{ once: true, margin: "-100px" }}
+            whileHover={{ scale: 1.05 }}
+            whileTap={{ scale: 0.95 }}
           >
             Get Started Free
-          </button>
+          </motion.button>
         </div>
       </section>
 
       {/* Footer */}
-      <footer className="bg-gray-800 border-t border-gray-700 py-8">
+      <motion.footer 
+        className="bg-gray-800 border-t border-gray-700 py-8"
+        initial={{ opacity: 0 }}
+        animate={{ opacity: 1 }}
+        transition={{ duration: 0.8, delay: 0.2 }}
+      >
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 text-center">
-          <div className="flex items-center justify-center space-x-2 mb-4">
+          <motion.div 
+            className="flex items-center justify-center space-x-2 mb-4"
+            initial={{ opacity: 0, y: 20 }}
+            animate={{ opacity: 1, y: 0 }}
+            transition={{ duration: 0.6, delay: 0.4 }}
+          >
             <ChefHat className="h-6 w-6 text-purple-400" />
             <span className="text-xl font-bold text-gradient">DesiTracker</span>
-          </div>
-          <p className="text-gray-400">
+          </motion.div>
+          <motion.p 
+            className="text-gray-400"
+            initial={{ opacity: 0, y: 20 }}
+            animate={{ opacity: 1, y: 0 }}
+            transition={{ duration: 0.6, delay: 0.6 }}
+          >
             Built with ❤️ for the Desi community
-          </p>
+          </motion.p>
         </div>
-      </footer>
+      </motion.footer>
 
       {/* Login Modal */}
       <LoginModal
@@ -199,27 +371,57 @@ const LandingPage = () => {
 }
 
 const FeatureCard = ({ icon, title, description }) => (
-  <div className="text-center p-6 rounded-lg bg-gray-700 border border-gray-600">
-    <div className="flex justify-center mb-4">
+  <motion.div 
+    className="text-center p-6 rounded-lg bg-gray-700 border border-gray-600"
+    variants={fadeInUp}
+    whileHover={{ 
+      scale: 1.05,
+      transition: { duration: 0.2 }
+    }}
+  >
+    <motion.div 
+      className="flex justify-center mb-4"
+      initial={{ scale: 0 }}
+      whileInView={{ scale: 1 }}
+      transition={{ duration: 0.5, delay: 0.2 }}
+      viewport={{ once: true }}
+    >
       {icon}
-    </div>
+    </motion.div>
     <h3 className="text-xl font-semibold text-white mb-2">{title}</h3>
     <p className="text-gray-300">{description}</p>
-  </div>
+  </motion.div>
 )
 
 const BenefitItem = ({ text }) => (
-  <div className="flex items-start space-x-3">
-    <CheckCircle className="h-5 w-5 text-purple-400 mt-0.5 flex-shrink-0" />
+  <motion.div 
+    className="flex items-start space-x-3"
+    variants={fadeInUp}
+  >
+    <motion.div
+      initial={{ scale: 0 }}
+      whileInView={{ scale: 1 }}
+      transition={{ duration: 0.3 }}
+      viewport={{ once: true }}
+    >
+      <CheckCircle className="h-5 w-5 text-purple-400 mt-0.5 flex-shrink-0" />
+    </motion.div>
     <span className="text-gray-300">{text}</span>
-  </div>
+  </motion.div>
 )
 
 const FoodSample = ({ name, calories }) => (
-  <div className="flex justify-between items-center py-2 border-b border-gray-600 last:border-b-0">
+  <motion.div 
+    className="flex justify-between items-center py-2 border-b border-gray-600 last:border-b-0"
+    variants={fadeInUp}
+    whileHover={{ 
+      x: 5,
+      transition: { duration: 0.2 }
+    }}
+  >
     <span className="text-gray-300">{name}</span>
     <span className="text-purple-400 font-medium">{calories}</span>
-  </div>
+  </motion.div>
 )
 
 const LoginModal = ({ isOpen, onClose, onSignupClick }) => {

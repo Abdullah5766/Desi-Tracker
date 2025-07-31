@@ -35,9 +35,11 @@ router.get('/entries', auth, async (req, res) => {
 
     // Filter by date if provided
     if (date) {
-      const targetDate = new Date(date)
-      const nextDay = new Date(targetDate)
-      nextDay.setDate(targetDate.getDate() + 1)
+      // Handle date in local timezone by adding time component to avoid UTC conversion issues
+      const targetDate = new Date(date + 'T00:00:00')
+      const nextDay = new Date(date + 'T23:59:59')
+      nextDay.setDate(nextDay.getDate() + 1)
+      nextDay.setHours(0, 0, 0, 0)
 
       whereClause.date = {
         gte: targetDate,
@@ -103,7 +105,7 @@ router.post('/entries', auth, async (req, res) => {
         cardioTypeId,
         duration: parseInt(duration),
         caloriesBurned,
-        date: date ? new Date(date) : new Date(),
+        date: date ? new Date(date + 'T12:00:00') : new Date(),
         notes: notes || null
       },
       include: {
@@ -215,8 +217,8 @@ router.get('/summary', auth, async (req, res) => {
 
     if (startDate && endDate) {
       whereClause.date = {
-        gte: new Date(startDate),
-        lte: new Date(endDate)
+        gte: new Date(startDate + 'T00:00:00'),
+        lte: new Date(endDate + 'T23:59:59')
       }
     }
 

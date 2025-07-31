@@ -203,7 +203,7 @@ router.post('/entries', auth, addFoodEntryValidation, async (req, res) => {
         foodId,
         quantity,
         meal: mealTypeEnum,
-        date: date ? new Date(date) : new Date()
+        date: date ? new Date(date + 'T12:00:00') : new Date()
       },
       include: {
         food: true
@@ -243,9 +243,11 @@ router.get('/entries', auth, async (req, res) => {
     };
 
     if (date) {
-      const searchDate = new Date(date);
-      const nextDay = new Date(searchDate);
+      // Handle date in local timezone by adding time component to avoid UTC conversion issues
+      const searchDate = new Date(date + 'T00:00:00');
+      const nextDay = new Date(date + 'T23:59:59');
       nextDay.setDate(nextDay.getDate() + 1);
+      nextDay.setHours(0, 0, 0, 0);
 
       whereConditions.date = {
         gte: searchDate,
@@ -333,7 +335,7 @@ router.put('/entries/:id', auth, updateFoodEntryValidation, async (req, res) => 
     const updateData = {};
     if (quantity !== undefined) updateData.quantity = quantity;
     if (mealType !== undefined) updateData.meal = mealType.toUpperCase();
-    if (date !== undefined) updateData.date = new Date(date);
+    if (date !== undefined) updateData.date = new Date(date + 'T12:00:00');
 
     const updatedEntry = await prisma.foodEntry.update({
       where: { id },
@@ -408,7 +410,7 @@ router.get('/entries/daily-totals', auth, async (req, res) => {
     const { date } = req.query;
     
     // Default to today if no date provided
-    const searchDate = date ? new Date(date) : new Date();
+    const searchDate = date ? new Date(date + 'T12:00:00') : new Date();
     const nextDay = new Date(searchDate);
     nextDay.setDate(nextDay.getDate() + 1);
 
