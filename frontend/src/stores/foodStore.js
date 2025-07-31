@@ -103,7 +103,7 @@ export const useFoodStore = create((set, get) => ({
     set({ isSearching: true, searchError: null })
     
     try {
-      const response = await api.get(`/food/search?q=${encodeURIComponent(query.trim())}&limit=20`)
+      const response = await api.get(`/foods?search=${encodeURIComponent(query.trim())}&limit=20`)
       const { foods } = response.data
 
       set({
