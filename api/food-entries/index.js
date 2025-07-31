@@ -1,7 +1,15 @@
 const { PrismaClient } = require('@prisma/client')
 const { authenticateToken } = require('../_middleware/auth')
 
-const prisma = new PrismaClient()
+// Global Prisma instance for serverless
+let prisma
+
+if (!global.prisma) {
+  global.prisma = new PrismaClient({
+    log: ['error'],
+  })
+}
+prisma = global.prisma
 
 const handler = async (req, res) => {
   if (req.method === 'GET') {
@@ -30,7 +38,10 @@ const handler = async (req, res) => {
 
     } catch (error) {
       console.error('Get food entries error:', error)
-      res.status(500).json({ message: 'Internal server error' })
+      res.status(500).json({ 
+        message: 'Internal server error',
+        error: process.env.NODE_ENV === 'development' ? error.message : 'Server error'
+      })
     }
 
   } else if (req.method === 'POST') {
@@ -63,7 +74,7 @@ const handler = async (req, res) => {
     res.status(405).json({ message: 'Method not allowed' })
   }
 
-  await prisma.$disconnect()
+  // Don't disconnect in serverless - keep connection alive
 }
 
 module.exports = authenticateToken(handler)

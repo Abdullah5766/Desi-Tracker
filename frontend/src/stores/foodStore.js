@@ -588,17 +588,20 @@ export const useFoodStore = create((set, get) => ({
       // Load custom food entries first
       get().loadCustomFoodEntries()
       
-      const response = await api.get(`/food/entries?date=${currentTrackingDate}&limit=100`)
+      const response = await api.get(`/food-entries?date=${currentTrackingDate}&limit=100`)
       console.log('🔍 API response:', response.data)
       const { entries } = response.data
       console.log('🔍 API entries received:', entries)
+
+      // Ensure entries is an array
+      const apiEntries = Array.isArray(entries) ? entries : []
 
       // Get custom food entries for current date
       const customEntries = get().getCustomFoodEntriesForDate(currentTrackingDate)
       console.log('🔍 Custom entries for current date:', customEntries)
 
       // Combine API and custom entries
-      const allEntries = [...entries, ...customEntries]
+      const allEntries = [...apiEntries, ...customEntries]
       console.log('🔍 Total combined entries:', allEntries)
 
       set({
