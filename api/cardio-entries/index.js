@@ -34,7 +34,7 @@ const handler = async (req, res) => {
         }
       })
 
-      res.status(200).json({ entries })
+      res.status(200).json({ entries: entries || [] })
 
     } catch (error) {
       console.error('Get cardio entries error:', error)

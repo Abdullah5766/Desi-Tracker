@@ -40,7 +40,7 @@ const handler = async (req, res) => {
       }
     })
 
-    res.status(200).json({ foods })
+    res.status(200).json({ foods: foods || [] })
 
   } catch (error) {
     console.error('Food search error:', error)
