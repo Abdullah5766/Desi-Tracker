@@ -1,5 +1,5 @@
 {
-  "buildCommand": "cd frontend && npm ci && npx vite build",
+  "buildCommand": "cd frontend && npm ci --include=dev && npm run build",
   "outputDirectory": "frontend/dist",
   "rewrites": [
     {
