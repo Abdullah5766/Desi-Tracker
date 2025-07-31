@@ -104,7 +104,7 @@ export const useFoodStore = create((set, get) => ({
     
     try {
       const response = await api.get(`/food/search?q=${encodeURIComponent(query.trim())}&limit=20`)
-      const { foods } = response.data.data
+      const { foods } = response.data
 
       set({
         searchResults: foods,
@@ -154,7 +154,7 @@ export const useFoodStore = create((set, get) => ({
         try {
           console.log(`📊 Fetching entries for ${dateString}...`)
           const response = await api.get(`/food/entries?date=${dateString}&limit=100`)
-          const { entries } = response.data.data
+          const { entries } = response.data
           
           // Get custom food entries for this date
           const customEntries = get().getCustomFoodEntriesForDate(dateString)
@@ -257,7 +257,7 @@ export const useFoodStore = create((set, get) => ({
         
         try {
           const response = await api.get(`/food/entries?date=${dateString}&limit=1`)
-          if (response.data.data.entries && response.data.data.entries.length > 0) {
+          if (response.data.entries && response.data.entries.length > 0) {
             earliestApiDate = new Date(dateString + 'T00:00:00')
             // Continue searching to find even earlier entries
           }
@@ -306,7 +306,7 @@ export const useFoodStore = create((set, get) => ({
         try {
           console.log(`📊 Fetching monthly entries for ${dateString}...`)
           const response = await api.get(`/food/entries?date=${dateString}&limit=100`)
-          const { entries } = response.data.data
+          const { entries } = response.data
           
           // Get custom food entries for this date
           const customEntries = get().getCustomFoodEntriesForDate(dateString)
@@ -381,7 +381,7 @@ export const useFoodStore = create((set, get) => ({
     set({ isLoadingPopular: true })
     try {
       const response = await api.get('/food/popular?limit=15')
-      const { foods } = response.data.data
+      const { foods } = response.data
 
       set({
         popularFoods: foods,
@@ -413,7 +413,7 @@ export const useFoodStore = create((set, get) => ({
       })
 
       console.log('✅ Food entry API response:', response.data)
-      const { entry } = response.data.data
+      const { entry } = response.data
 
       // Add to current tracking date entries if it matches
       const currentState = get()
@@ -450,7 +450,7 @@ export const useFoodStore = create((set, get) => ({
   updateFoodEntry: async (entryId, updateData) => {
     try {
       const response = await api.put(`/food/entries/${entryId}`, updateData)
-      const { entry } = response.data.data
+      const { entry } = response.data
 
       // Update in today's entries
       set((state) => ({
@@ -590,7 +590,7 @@ export const useFoodStore = create((set, get) => ({
       
       const response = await api.get(`/food/entries?date=${currentTrackingDate}&limit=100`)
       console.log('🔍 API response:', response.data)
-      const { entries } = response.data.data
+      const { entries } = response.data
       console.log('🔍 API entries received:', entries)
 
       // Get custom food entries for current date

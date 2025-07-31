@@ -37,8 +37,8 @@ export const useCardioStore = create((set, get) => ({
     console.log('🏃‍♂️ fetchCardioTypes called')
     set({ isLoadingTypes: true })
     try {
-      const response = await api.get('/cardio/types')
-      const { cardioTypes } = response.data.data
+      const response = await api.get('/cardio-types')
+      const { cardioTypes } = response.data
 
       set({
         cardioTypes,
@@ -63,9 +63,9 @@ export const useCardioStore = create((set, get) => ({
     try {
       const { currentTrackingDate } = get()
       console.log('🔍 Fetching cardio entries for date:', currentTrackingDate)
-      const response = await api.get(`/cardio/entries?date=${currentTrackingDate}&limit=100`)
+      const response = await api.get(`/cardio-entries?date=${currentTrackingDate}&limit=100`)
       console.log('🔍 Cardio API response:', response.data)
-      const { entries } = response.data.data
+      const { entries } = response.data
       console.log('🔍 Cardio entries received:', entries)
 
       set({
@@ -94,7 +94,7 @@ export const useCardioStore = create((set, get) => ({
       const entryDate = date || currentTrackingDate
       console.log('🏃‍♂️ Adding cardio entry:', { cardioTypeId, duration, date: entryDate, notes })
       
-      const response = await api.post('/cardio/entries', {
+      const response = await api.post('/cardio-entries', {
         cardioTypeId,
         duration: parseInt(duration),
         date: entryDate,
@@ -102,7 +102,7 @@ export const useCardioStore = create((set, get) => ({
       })
 
       console.log('✅ Cardio entry API response:', response.data)
-      const { entry } = response.data.data
+      const { entry } = response.data
 
       // Add to current tracking date entries if it matches
       const currentState = get()
@@ -139,8 +139,8 @@ export const useCardioStore = create((set, get) => ({
   // Update cardio entry
   updateCardioEntry: async (entryId, updateData) => {
     try {
-      const response = await api.put(`/cardio/entries/${entryId}`, updateData)
-      const { entry } = response.data.data
+      const response = await api.put(`/cardio-entries/${entryId}`, updateData)
+      const { entry } = response.data
 
       // Update in today's entries
       set((state) => ({
@@ -169,7 +169,7 @@ export const useCardioStore = create((set, get) => ({
   // Delete cardio entry
   deleteCardioEntry: async (entryId) => {
     try {
-      await api.delete(`/cardio/entries/${entryId}`)
+      await api.delete(`/cardio-entries/${entryId}`)
 
       // Remove from today's entries
       set((state) => ({
@@ -280,8 +280,8 @@ export const useCardioStore = create((set, get) => ({
         
         try {
           console.log(`🏃‍♂️ Fetching cardio entries for ${dateString}...`)
-          const response = await api.get(`/cardio/entries?date=${dateString}&limit=100`)
-          const { entries } = response.data.data
+          const response = await api.get(`/cardio-entries?date=${dateString}&limit=100`)
+          const { entries } = response.data
           
           // Calculate totals
           const dayTotals = entries.reduce((acc, entry) => {
