@@ -540,10 +540,12 @@ const DashboardOverview = () => {
   const { dailyTotals: cardioDailyTotals, fetchTodayEntries: fetchCardioEntries, checkAndUpdateDate: checkCardioDate, setTrackingDate: setCardioTrackingDate } = useCardioStore()
 
   useEffect(() => {
-    // Fetch cardio data when component mounts
-    checkCardioDate()
-    fetchCardioEntries()
-  }, [checkCardioDate, fetchCardioEntries])
+    // Only fetch cardio data if user is authenticated
+    if (user && user.id) {
+      checkCardioDate()
+      fetchCardioEntries()
+    }
+  }, [checkCardioDate, fetchCardioEntries, user])
 
   // Sync cardio tracking date with food tracking date
   useEffect(() => {

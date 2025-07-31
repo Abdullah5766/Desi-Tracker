@@ -47,12 +47,15 @@ export const useCardioStore = create((set, get) => ({
 
     } catch (error) {
       console.error('Failed to fetch cardio types:', error)
-      console.error('❌ Error response:', error.response?.data)
-      console.error('❌ Error status:', error.response?.status)
       set({ isLoadingTypes: false })
-      if (error.response?.status !== 401) {
-        toast.error('Failed to load cardio types: ' + (error.response?.data?.message || error.message))
+      
+      // Don't show error toast for authentication issues
+      if (error.response?.status === 401) {
+        console.log('❌ Authentication required for cardio types')
+        return
       }
+      
+      toast.error('Failed to load cardio types: ' + (error.response?.data?.message || error.message))
     }
   },
 
@@ -78,12 +81,15 @@ export const useCardioStore = create((set, get) => ({
 
     } catch (error) {
       console.error('❌ Failed to fetch today\'s cardio entries:', error)
-      console.error('❌ Error details:', error.response?.data)
       set({ isLoadingEntries: false })
       
-      if (error.response?.status !== 401) {
-        toast.error('Failed to load cardio entries: ' + (error.response?.data?.message || error.message))
+      // Don't show error toast for authentication issues
+      if (error.response?.status === 401) {
+        console.log('❌ Authentication required for cardio entries')
+        return
       }
+      
+      toast.error('Failed to load cardio entries: ' + (error.response?.data?.message || error.message))
     }
   },
 
