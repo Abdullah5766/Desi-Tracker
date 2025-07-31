@@ -153,7 +153,7 @@ export const useFoodStore = create((set, get) => ({
         
         try {
           console.log(`📊 Fetching entries for ${dateString}...`)
-          const response = await api.get(`/food/entries?date=${dateString}&limit=100`)
+          const response = await api.get(`/food-entries?date=${dateString}&limit=100`)
           const { entries } = response.data
           
           // Get custom food entries for this date
@@ -256,7 +256,7 @@ export const useFoodStore = create((set, get) => ({
                           String(checkDate.getDate()).padStart(2, '0')
         
         try {
-          const response = await api.get(`/food/entries?date=${dateString}&limit=1`)
+          const response = await api.get(`/food-entries?date=${dateString}&limit=1`)
           if (response.data.entries && response.data.entries.length > 0) {
             earliestApiDate = new Date(dateString + 'T00:00:00')
             // Continue searching to find even earlier entries
@@ -305,7 +305,7 @@ export const useFoodStore = create((set, get) => ({
         
         try {
           console.log(`📊 Fetching monthly entries for ${dateString}...`)
-          const response = await api.get(`/food/entries?date=${dateString}&limit=100`)
+          const response = await api.get(`/food-entries?date=${dateString}&limit=100`)
           const { entries } = response.data
           
           // Get custom food entries for this date
@@ -380,7 +380,7 @@ export const useFoodStore = create((set, get) => ({
     console.log('🚀 fetchPopularFoods called')
     set({ isLoadingPopular: true })
     try {
-      const response = await api.get('/food/popular?limit=15')
+      const response = await api.get('/foods/popular?limit=15')
       const { foods } = response.data
 
       set({
@@ -405,7 +405,7 @@ export const useFoodStore = create((set, get) => ({
       const { currentTrackingDate } = get()
       const entryDate = date || currentTrackingDate
       console.log('🍽️ Adding food entry:', { foodId, quantity, mealType, date: entryDate, currentTrackingDate })
-      const response = await api.post('/food/entries', {
+      const response = await api.post('/food-entries', {
         foodId,
         quantity: parseFloat(quantity),
         mealType,
@@ -449,7 +449,7 @@ export const useFoodStore = create((set, get) => ({
 
   updateFoodEntry: async (entryId, updateData) => {
     try {
-      const response = await api.put(`/food/entries/${entryId}`, updateData)
+      const response = await api.put(`/food-entries/${entryId}`, updateData)
       const { entry } = response.data
 
       // Update in today's entries
@@ -480,7 +480,7 @@ export const useFoodStore = create((set, get) => ({
       
       if (!isCustomEntry) {
         // Only call API for non-custom entries
-        await api.delete(`/food/entries/${entryId}`)
+        await api.delete(`/food-entries/${entryId}`)
       } else {
         // Remove from localStorage for custom entries
         get().removeCustomFoodEntry(entryId)
