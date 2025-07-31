@@ -1319,6 +1319,27 @@ async function main() {
   totalItems += condiment.length;
   console.log(`✅ Added ${condiment.length} condiment items`);
 
+  // Seed cardio types
+  console.log('💓 Seeding cardio types...');
+  const cardioTypes = [
+    { name: 'Running', caloriesPerMinute: 10, description: 'Running at moderate pace' },
+    { name: 'Walking', caloriesPerMinute: 4, description: 'Brisk walking' },
+    { name: 'Cycling', caloriesPerMinute: 8, description: 'Cycling at moderate pace' },
+    { name: 'Swimming', caloriesPerMinute: 12, description: 'Swimming laps' },
+    { name: 'Jumping Rope', caloriesPerMinute: 15, description: 'Jump rope exercise' },
+    { name: 'Weightlifting', caloriesPerMinute: 6, description: 'Weight training' },
+    { name: 'Yoga', caloriesPerMinute: 3, description: 'Yoga practice' },
+    { name: 'Dancing', caloriesPerMinute: 7, description: 'Dancing activity' }
+  ];
+
+  for (const cardioType of cardioTypes) {
+    await prisma.cardioType.create({
+      data: cardioType
+    });
+  }
+  totalItems += cardioTypes.length;
+  console.log(`✅ Added ${cardioTypes.length} cardio types`);
+
   console.log('\n' + '='.repeat(50));
   console.log('🎉 Seed completed successfully!');
   console.log(`📊 Total food items created: ${totalItems}`);
