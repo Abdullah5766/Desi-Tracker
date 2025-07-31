@@ -121,7 +121,7 @@ export const useAuthStore = create(
         set({ isLoading: true })
         try {
           const response = await api.post('/auth/verify', { token })
-          const { user } = response.data.data
+          const { user } = response.data
 
           // If this is a different user than what's persisted, clear data
           if (currentUser && currentUser.id !== user.id) {
@@ -178,7 +178,7 @@ export const useAuthStore = create(
       fetchProfile: async () => {
         try {
           const response = await api.get('/user/profile')
-          const { user } = response.data.data
+          const { user } = response.data
 
           set((state) => ({
             user: { ...state.user, ...user }
@@ -198,7 +198,7 @@ export const useAuthStore = create(
       updateProfile: async (profileData) => {
         try {
           const response = await api.put('/user/profile', profileData)
-          const { user } = response.data.data
+          const { user } = response.data
 
           set((state) => ({
             user: { ...state.user, ...user }
@@ -219,7 +219,7 @@ export const useAuthStore = create(
       updateGoals: async (goalsData) => {
         try {
           const response = await api.put('/user/goals', goalsData)
-          const { user } = response.data.data
+          const { user } = response.data
 
           set((state) => ({
             user: { ...state.user, ...user }
