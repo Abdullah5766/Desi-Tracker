@@ -1,0 +1,29 @@
+services:
+  # Backend Service
+  - type: web
+    name: desi-tracker-backend
+    env: node
+    plan: free
+    buildCommand: npm install && npm run build
+    startCommand: npm start
+    healthCheckPath: /health
+    envVars:
+      - key: NODE_ENV
+        value: production
+      - key: DATABASE_URL
+        fromDatabase:
+          name: desi-tracker-db
+          property: connectionString
+      - key: JWT_SECRET
+        generateValue: true
+      - key: JWT_EXPIRES_IN
+        value: 7d
+      - key: FRONTEND_URL
+        value: https://your-frontend-name.onrender.com
+
+# Database
+databases:
+  - name: desi-tracker-db
+    databaseName: desi_tracker
+    user: desi_tracker_user
+    plan: free
