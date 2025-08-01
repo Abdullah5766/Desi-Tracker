@@ -9,7 +9,7 @@ import { useAuthStore } from '../stores/authStore'
 
 const MonthlyProgress = () => {
   const { user } = useAuthStore()
-  const { calculatedCalories, calculateTDEE } = useCalorieStore()
+  const { calculatedCalories, calculateTDEE, weight } = useCalorieStore()
   const { fetchMonthlyTotals, monthlyTotals, isLoadingMonthly } = useFoodStore()
   const [weeklyPredictions, setWeeklyPredictions] = useState([])
 
@@ -181,14 +181,23 @@ const MonthlyProgress = () => {
           {/* Current Weight */}
           <div className="text-center">
             <p className="text-gray-400 text-sm mb-1">Current Weight</p>
-            <p className="text-3xl font-bold text-white">{user?.weight || '70'} kg</p>
+            <p className="text-3xl font-bold text-white">{weight || user?.weight || '70'} kg</p>
           </div>
           
           {/* Monthly Deficit/Surplus */}
           <div className="text-center">
-            <p className="text-gray-400 text-sm mb-1">Monthly {isInDeficit ? 'Deficit' : 'Surplus'}</p>
-            <p className={`text-3xl font-bold ${isInDeficit ? 'text-green-400' : 'text-red-400'}`}>
-              {Math.abs(monthlyDeficit).toLocaleString()} cal
+            <p className="text-gray-400 text-sm mb-1">
+              {calculatedCalories ? `Monthly ${isInDeficit ? 'Deficit' : 'Surplus'}` : 'Monthly Goal'}
+            </p>
+            <p className={`text-3xl font-bold ${
+              calculatedCalories 
+                ? (isInDeficit ? 'text-green-400' : 'text-red-400')
+                : 'text-gray-400'
+            }`}>
+              {calculatedCalories 
+                ? `${Math.abs(monthlyDeficit).toLocaleString()} cal`
+                : 'Not Set'
+              }
             </p>
           </div>
           
