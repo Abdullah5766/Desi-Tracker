@@ -414,6 +414,8 @@ export const useFoodStore = create((set, get) => ({
       const entryDateString = entry.date.split('T')[0] // Get YYYY-MM-DD format
       
       console.log('📅 Current tracking date:', currentState.currentTrackingDate, 'Entry date:', entryDateString)
+      console.log('📅 Date comparison result:', entryDateString === currentState.currentTrackingDate)
+      console.log('📅 Entry object:', entry)
       
       if (entryDateString === currentState.currentTrackingDate) {
         console.log('✅ Adding to current tracking date entries')
@@ -425,6 +427,9 @@ export const useFoodStore = create((set, get) => ({
         get().calculateDailyTotals()
       } else {
         console.log('⚠️ Entry date doesn\'t match tracking date, not adding to state')
+        console.log('⚠️ Refreshing today\'s entries from API instead')
+        // If dates don't match, refresh today's entries from API
+        get().fetchTodayEntries()
       }
 
       // Refresh weekly totals to update the chart

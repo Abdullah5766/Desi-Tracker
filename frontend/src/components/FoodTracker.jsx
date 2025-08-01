@@ -71,7 +71,7 @@ const FoodTracker = () => {
     if (isReady()) {
       fetchTodayEntries()
     }
-  }, [fetchTodayEntries, isReady])
+  }, [fetchTodayEntries, isReady, currentTrackingDate])
 
   // Debounced search function
   const debouncedSearch = useCallback(

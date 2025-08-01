@@ -5,13 +5,13 @@ import { useAuthStore } from '../stores/authStore'
 
 const NutritionOverview = () => {
   const { user, isReady } = useAuthStore()
-  const { dailyTotals, fetchTodayEntries } = useFoodStore()
+  const { dailyTotals, fetchTodayEntries, currentTrackingDate } = useFoodStore()
 
   useEffect(() => {
     if (isReady()) {
       fetchTodayEntries()
     }
-  }, [fetchTodayEntries, isReady])
+  }, [fetchTodayEntries, isReady, currentTrackingDate])
 
   const goals = {
     calories: user?.calorieGoal || 0,
