@@ -495,36 +495,64 @@ export const useFoodStore = create((set, get) => ({
 
   deleteFoodEntry: async (entryId) => {
     try {
+      // Store the entry to restore if deletion fails
+      const currentState = get()
+      const entryToDelete = currentState.todayEntries.find(e => e.id === entryId)
+      
+      if (!entryToDelete) {
+        toast.error('Entry not found')
+        return { success: false, message: 'Entry not found' }
+      }
+
+      // OPTIMISTIC UPDATE: Remove from UI immediately
+      set((state) => ({
+        todayEntries: state.todayEntries.filter(e => e.id !== entryId)
+      }))
+
+      // Recalculate daily totals immediately
+      get().calculateDailyTotals()
+
+      // Show success message immediately
+      toast.success('Food entry deleted!')
+
       // Check if this is a custom food entry
       const isCustomEntry = entryId.startsWith('custom_')
       
+      // Perform API call in background (for non-custom entries)
       if (!isCustomEntry) {
-        // Only call API for non-custom entries
-        await api.delete(`/food-entries?entryId=${entryId}`)
+        try {
+          await api.delete(`/food-entries?entryId=${entryId}`)
+        } catch (apiError) {
+          // If API call fails, restore the entry
+          console.error('Failed to delete food entry from server:', apiError)
+          
+          // Restore the entry in UI
+          set((state) => ({
+            todayEntries: [...state.todayEntries, entryToDelete].sort((a, b) => 
+              new Date(a.createdAt) - new Date(b.createdAt)
+            )
+          }))
+          
+          // Recalculate totals with restored entry
+          get().calculateDailyTotals()
+          
+          toast.error('Failed to delete entry - restored')
+          return { success: false, message: 'API deletion failed' }
+        }
       } else {
         // Remove from localStorage for custom entries
         get().removeCustomFoodEntry(entryId)
       }
 
-      // Remove from today's entries (both custom and regular)
-      set((state) => ({
-        todayEntries: state.todayEntries.filter(e => e.id !== entryId)
-      }))
-
-      // Recalculate daily totals
-      get().calculateDailyTotals()
-
-      // Refresh weekly totals to update the chart
+      // Refresh weekly totals to update the chart (in background)
       get().fetchWeeklyTotals()
 
-      toast.success('Food entry deleted!')
       return { success: true }
 
     } catch (error) {
       console.error('Failed to delete food entry:', error)
-      const message = error.response?.data?.message || 'Failed to delete food entry'
-      toast.error(message)
-      return { success: false, message }
+      toast.error('Failed to delete food entry')
+      return { success: false, message: error.message }
     }
   },
 
