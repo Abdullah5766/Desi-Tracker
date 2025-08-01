@@ -143,7 +143,9 @@ export const useFoodStore = create((set, get) => ({
       const currentWeekStart = new Date(today.getFullYear(), today.getMonth(), today.getDate())
       currentWeekStart.setDate(today.getDate() - today.getDay() + 1) // Start from Monday
       
-      const weeklyData = []
+      // Prepare all API requests in parallel
+      const weekApiPromises = []
+      const weekDates = []
       
       for (let i = 0; i < 7; i++) {
         const date = new Date(currentWeekStart.getFullYear(), currentWeekStart.getMonth(), currentWeekStart.getDate() + i)
@@ -151,69 +153,62 @@ export const useFoodStore = create((set, get) => ({
                           String(date.getMonth() + 1).padStart(2, '0') + '-' + 
                           String(date.getDate()).padStart(2, '0')
         
-        try {
-          console.log(`📊 Fetching entries for ${dateString}...`)
-          const response = await api.get(`/food-entries?date=${dateString}&limit=100`)
-          const { entries } = response.data
-          
-          // Get custom food entries for this date
-          const customEntries = get().getCustomFoodEntriesForDate(dateString)
-          console.log(`📊 Found ${entries.length} API entries and ${customEntries.length} custom entries for ${dateString}`)
-          
-          // Combine API and custom entries
-          const allEntries = [...entries, ...customEntries]
-          
-          // Calculate totals using the same logic as calculateDailyTotals
-          const dayTotals = allEntries.reduce((acc, entry) => {
-            if (entry.nutritionalValues) {
-              acc.calories += entry.nutritionalValues.calories || 0
-              acc.protein += entry.nutritionalValues.protein || 0
-              acc.carbs += entry.nutritionalValues.carbs || 0
-              acc.fat += entry.nutritionalValues.fat || 0
-            }
-            return acc
-          }, { calories: 0, protein: 0, carbs: 0, fat: 0 })
-
-          const dayName = date.toLocaleDateString('en-US', { weekday: 'long' })
-          
-          weeklyData.push({
-            date: dateString,
-            dayName,
-            calories: Math.round(dayTotals.calories),
-            protein: Math.round(dayTotals.protein * 10) / 10,
-            carbs: Math.round(dayTotals.carbs * 10) / 10,
-            fat: Math.round(dayTotals.fat * 10) / 10,
-            entries: allEntries.length
-          })
-          
-        } catch (error) {
-          console.error(`📊 Failed to fetch data for ${dateString}:`, error)
-          
-          // Still check for custom entries even if API fails
-          const customEntries = get().getCustomFoodEntriesForDate(dateString)
-          console.log(`📊 Found ${customEntries.length} custom entries for ${dateString} (API failed)`)
-          
-          const dayTotals = customEntries.reduce((acc, entry) => {
-            if (entry.nutritionalValues) {
-              acc.calories += entry.nutritionalValues.calories || 0
-              acc.protein += entry.nutritionalValues.protein || 0
-              acc.carbs += entry.nutritionalValues.carbs || 0
-              acc.fat += entry.nutritionalValues.fat || 0
-            }
-            return acc
-          }, { calories: 0, protein: 0, carbs: 0, fat: 0 })
-          
-          const dayName = date.toLocaleDateString('en-US', { weekday: 'long' })
-          weeklyData.push({
-            date: dateString,
-            dayName,
-            calories: Math.round(dayTotals.calories),
-            protein: Math.round(dayTotals.protein * 10) / 10,
-            carbs: Math.round(dayTotals.carbs * 10) / 10,
-            fat: Math.round(dayTotals.fat * 10) / 10,
-            entries: customEntries.length
-          })
+        weekDates.push({ date, dateString })
+        weekApiPromises.push(
+          api.get(`/food-entries?date=${dateString}&limit=100`)
+            .then(response => ({ dateString, entries: response.data.entries, success: true }))
+            .catch(error => ({ dateString, entries: [], success: false, error }))
+        )
+      }
+      
+      console.log(`📊 Making ${weekApiPromises.length} parallel API calls for weekly data...`)
+      
+      // Execute all API calls in parallel
+      const apiResults = await Promise.all(weekApiPromises)
+      
+      console.log('📊 All weekly API calls completed')
+      
+      // Process results
+      const weeklyData = []
+      
+      for (let i = 0; i < weekDates.length; i++) {
+        const { date, dateString } = weekDates[i]
+        const apiResult = apiResults[i]
+        
+        // Get custom food entries for this date
+        const customEntries = get().getCustomFoodEntriesForDate(dateString)
+        
+        if (!apiResult.success) {
+          console.error(`📊 Failed to fetch data for ${dateString}:`, apiResult.error)
         }
+        
+        console.log(`📊 Found ${apiResult.entries.length} API entries and ${customEntries.length} custom entries for ${dateString}`)
+        
+        // Combine API and custom entries
+        const allEntries = [...apiResult.entries, ...customEntries]
+        
+        // Calculate totals using the same logic as calculateDailyTotals
+        const dayTotals = allEntries.reduce((acc, entry) => {
+          if (entry.nutritionalValues) {
+            acc.calories += entry.nutritionalValues.calories || 0
+            acc.protein += entry.nutritionalValues.protein || 0
+            acc.carbs += entry.nutritionalValues.carbs || 0
+            acc.fat += entry.nutritionalValues.fat || 0
+          }
+          return acc
+        }, { calories: 0, protein: 0, carbs: 0, fat: 0 })
+
+        const dayName = date.toLocaleDateString('en-US', { weekday: 'long' })
+        
+        weeklyData.push({
+          date: dateString,
+          dayName,
+          calories: Math.round(dayTotals.calories),
+          protein: Math.round(dayTotals.protein * 10) / 10,
+          carbs: Math.round(dayTotals.carbs * 10) / 10,
+          fat: Math.round(dayTotals.fat * 10) / 10,
+          entries: allEntries.length
+        })
       }
       
       console.log('📊 Final weekly data:', weeklyData)
@@ -295,7 +290,10 @@ export const useFoodStore = create((set, get) => ({
       
       // Get past 30 days (simplified approach)
       const today = new Date()
-      const monthlyData = []
+      
+      // Prepare all API requests in parallel
+      const monthApiPromises = []
+      const monthDates = []
       
       for (let i = 29; i >= 0; i--) {
         const date = new Date(today.getFullYear(), today.getMonth(), today.getDate() - i)
@@ -303,67 +301,63 @@ export const useFoodStore = create((set, get) => ({
                           String(date.getMonth() + 1).padStart(2, '0') + '-' + 
                           String(date.getDate()).padStart(2, '0')
         
-        try {
-          console.log(`📊 Fetching monthly entries for ${dateString}...`)
-          const response = await api.get(`/food-entries?date=${dateString}&limit=100`)
-          const { entries } = response.data
-          
-          // Get custom food entries for this date
-          const customEntries = get().getCustomFoodEntriesForDate(dateString)
-          console.log(`📊 Found ${entries.length} API entries and ${customEntries.length} custom entries for ${dateString}`)
-          
-          // Combine API and custom entries
-          const allEntries = [...entries, ...customEntries]
-          
-          // Calculate totals
-          const dayTotals = allEntries.reduce((acc, entry) => {
-            if (entry.nutritionalValues) {
-              acc.calories += entry.nutritionalValues.calories || 0
-              acc.protein += entry.nutritionalValues.protein || 0
-              acc.carbs += entry.nutritionalValues.carbs || 0
-              acc.fat += entry.nutritionalValues.fat || 0
-            }
-            return acc
-          }, { calories: 0, protein: 0, carbs: 0, fat: 0 })
-          
-          monthlyData.push({
-            date: dateString,
-            calories: Math.round(dayTotals.calories),
-            protein: Math.round(dayTotals.protein * 10) / 10,
-            carbs: Math.round(dayTotals.carbs * 10) / 10,
-            fat: Math.round(dayTotals.fat * 10) / 10,
-            entries: allEntries.length
-          })
-          
-        } catch (error) {
-          console.error(`📊 Failed to fetch monthly data for ${dateString}:`, error)
-          
-          // Still check for custom entries even if API fails
-          const customEntries = get().getCustomFoodEntriesForDate(dateString)
-          console.log(`📊 Found ${customEntries.length} custom entries for ${dateString} (API failed)`)
-          
-          const dayTotals = customEntries.reduce((acc, entry) => {
-            if (entry.nutritionalValues) {
-              acc.calories += entry.nutritionalValues.calories || 0
-              acc.protein += entry.nutritionalValues.protein || 0
-              acc.carbs += entry.nutritionalValues.carbs || 0
-              acc.fat += entry.nutritionalValues.fat || 0
-            }
-            return acc
-          }, { calories: 0, protein: 0, carbs: 0, fat: 0 })
-          
-          monthlyData.push({
-            date: dateString,
-            calories: Math.round(dayTotals.calories),
-            protein: Math.round(dayTotals.protein * 10) / 10,
-            carbs: Math.round(dayTotals.carbs * 10) / 10,
-            fat: Math.round(dayTotals.fat * 10) / 10,
-            entries: customEntries.length
-          })
+        monthDates.push({ date, dateString })
+        monthApiPromises.push(
+          api.get(`/food-entries?date=${dateString}&limit=100`)
+            .then(response => ({ dateString, entries: response.data.entries, success: true }))
+            .catch(error => ({ dateString, entries: [], success: false, error }))
+        )
+      }
+      
+      console.log(`📊 Making ${monthApiPromises.length} parallel API calls for monthly data...`)
+      
+      // Execute all API calls in parallel
+      const apiResults = await Promise.all(monthApiPromises)
+      
+      console.log('📊 All monthly API calls completed')
+      
+      // Process results
+      const monthlyData = []
+      
+      for (let i = 0; i < monthDates.length; i++) {
+        const { dateString } = monthDates[i]
+        const apiResult = apiResults[i]
+        
+        // Get custom food entries for this date
+        const customEntries = get().getCustomFoodEntriesForDate(dateString)
+        
+        if (!apiResult.success) {
+          console.error(`📊 Failed to fetch monthly data for ${dateString}:`, apiResult.error)
         }
+        
+        console.log(`📊 Found ${apiResult.entries.length} API entries and ${customEntries.length} custom entries for ${dateString}`)
+        
+        // Combine API and custom entries
+        const allEntries = [...apiResult.entries, ...customEntries]
+        
+        // Calculate totals
+        const dayTotals = allEntries.reduce((acc, entry) => {
+          if (entry.nutritionalValues) {
+            acc.calories += entry.nutritionalValues.calories || 0
+            acc.protein += entry.nutritionalValues.protein || 0
+            acc.carbs += entry.nutritionalValues.carbs || 0
+            acc.fat += entry.nutritionalValues.fat || 0
+          }
+          return acc
+        }, { calories: 0, protein: 0, carbs: 0, fat: 0 })
+        
+        monthlyData.push({
+          date: dateString,
+          calories: Math.round(dayTotals.calories),
+          protein: Math.round(dayTotals.protein * 10) / 10,
+          carbs: Math.round(dayTotals.carbs * 10) / 10,
+          fat: Math.round(dayTotals.fat * 10) / 10,
+          entries: allEntries.length
+        })
       }
       
       console.log('📊 Final monthly data:', monthlyData)
+      
       
       set({
         monthlyTotals: monthlyData,
