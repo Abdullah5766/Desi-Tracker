@@ -411,12 +411,16 @@ export const useFoodStore = create((set, get) => ({
       console.log('🍽️ Adding food entry:', { foodId, quantity, mealType, date: entryDate, currentTrackingDate })
       console.log('🍽️ Current todayEntries before adding:', todayEntries)
       console.log('🍽️ Auth headers:', api.defaults.headers.common['Authorization'])
-      const response = await api.post('/food-entries', {
+      
+      const requestData = {
         foodId,
         quantity: parseFloat(quantity),
-        mealType: mealType.toLowerCase(), // Ensure lowercase
+        meal: mealType.toUpperCase(), // Backend expects 'meal' field in uppercase
         date: entryDate
-      })
+      }
+      console.log('🍽️ Request data being sent to API:', requestData)
+      
+      const response = await api.post('/food-entries', requestData)
 
       console.log('✅ Food entry API response:', response.data)
       const { entry } = response.data
