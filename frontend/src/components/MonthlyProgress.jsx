@@ -184,18 +184,16 @@ const MonthlyProgress = () => {
             <p className="text-3xl font-bold text-white">{weight || user?.weight || '70'} kg</p>
           </div>
           
-          {/* Monthly Deficit/Surplus */}
+          {/* Monthly Intake Goal */}
           <div className="text-center">
-            <p className="text-gray-400 text-sm mb-1">
-              {calculatedCalories ? `Monthly ${isInDeficit ? 'Deficit' : 'Surplus'}` : 'Monthly Goal'}
-            </p>
+            <p className="text-gray-400 text-sm mb-1">Your monthly intake should be (KCal)</p>
             <p className={`text-3xl font-bold ${
               calculatedCalories 
-                ? (isInDeficit ? 'text-green-400' : 'text-red-400')
+                ? 'text-blue-400'
                 : 'text-gray-400'
             }`}>
               {calculatedCalories 
-                ? `${Math.abs(monthlyDeficit).toLocaleString()} cal`
+                ? `${(calculatedCalories * monthlyTotals.length).toLocaleString()} cal`
                 : 'Not Set'
               }
             </p>
