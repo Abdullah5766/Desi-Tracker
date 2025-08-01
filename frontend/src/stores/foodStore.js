@@ -729,6 +729,7 @@ export const useFoodStore = create((set, get) => ({
 
   // Modal functions
   openAddFoodModal: (food, mealType = 'breakfast') => {
+    console.log('🍽️ openAddFoodModal called with:', { food: food?.name, mealType })
     set({
       isAddFoodModalOpen: true,
       selectedFood: food,

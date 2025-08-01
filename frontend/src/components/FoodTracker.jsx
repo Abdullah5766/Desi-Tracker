@@ -662,6 +662,12 @@ const AddFoodModal = () => {
     e.preventDefault()
     if (!selectedFood || !quantity) return
 
+    console.log('🍽️ AddFoodModal submitting with:', {
+      foodId: selectedFood.id,
+      quantity: parseFloat(quantity),
+      mealType: selectedMealType
+    })
+
     setIsSubmitting(true)
     const result = await addFoodEntry(
       selectedFood.id,
