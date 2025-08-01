@@ -96,13 +96,19 @@ export const useCardioStore = create((set, get) => ({
   // Add cardio entry
   addCardioEntry: async (cardioTypeId, duration, date = null, notes = '') => {
     try {
-      const { currentTrackingDate } = get()
+      const { currentTrackingDate, cardioTypes } = get()
       const entryDate = date || currentTrackingDate
-      console.log('🏃‍♂️ Adding cardio entry:', { cardioTypeId, duration, date: entryDate, notes })
+      
+      // Find the cardio type to calculate calories burned
+      const cardioType = cardioTypes.find(type => type.id === cardioTypeId)
+      const caloriesBurned = cardioType ? cardioType.caloriesPerMinute * parseInt(duration) : 0
+      
+      console.log('🏃‍♂️ Adding cardio entry:', { cardioTypeId, duration, date: entryDate, notes, caloriesBurned })
       
       const response = await api.post('/cardio-entries', {
         cardioTypeId,
         duration: parseInt(duration),
+        caloriesBurned: caloriesBurned,
         date: entryDate,
         notes: notes || null
       })
