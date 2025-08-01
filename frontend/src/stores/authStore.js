@@ -145,16 +145,36 @@ export const useAuthStore = create(
         } catch (error) {
           console.error('Auth check failed:', error)
           
-          // Clear invalid auth state
-          set({
-            user: null,
-            token: null,
-            isAuthenticated: false,
-            isLoading: false,
-            isInitializing: false
-          })
+          // Only clear auth state for authentication errors, not network/server errors
+          const isAuthError = error.response?.status === 401 || 
+                              error.response?.status === 403 ||
+                              error.response?.data?.message?.includes('token') ||
+                              error.response?.data?.message?.includes('Invalid') ||
+                              error.response?.data?.message?.includes('expired')
           
-          delete api.defaults.headers.common['Authorization']
+          if (isAuthError) {
+            // Clear invalid auth state only for auth-related errors
+            set({
+              user: null,
+              token: null,
+              isAuthenticated: false,
+              isLoading: false,
+              isInitializing: false
+            })
+            
+            delete api.defaults.headers.common['Authorization']
+            toast.error('Session expired. Please log in again.')
+          } else {
+            // For server errors (500) or network issues, don't clear auth state
+            // Just update loading states but keep user authenticated
+            set({
+              isLoading: false,
+              isInitializing: false
+            })
+            
+            // Show a non-intrusive warning instead of logging out
+            console.warn('Auth verification failed due to server error. Keeping user logged in.')
+          }
         }
       },
 

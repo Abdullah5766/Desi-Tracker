@@ -56,7 +56,13 @@ const handler = async (req, res) => {
     res.status(200).json({ user })
 
   } catch (error) {
-    console.error('Token verification error:', error)
+    console.error('Token verification error:', {
+      name: error.name,
+      message: error.message,
+      stack: error.stack,
+      token: token ? 'present' : 'missing',
+      jwtSecret: process.env.JWT_SECRET ? 'present' : 'missing'
+    })
     
     if (error.name === 'JsonWebTokenError') {
       return res.status(401).json({ message: 'Invalid token' })
@@ -64,6 +70,15 @@ const handler = async (req, res) => {
     
     if (error.name === 'TokenExpiredError') {
       return res.status(401).json({ message: 'Token expired' })
+    }
+
+    // More specific database error handling
+    if (error.code === 'P2002') {
+      return res.status(500).json({ message: 'Database constraint error' })
+    }
+    
+    if (error.code && error.code.startsWith('P')) {
+      return res.status(500).json({ message: 'Database error' })
     }
 
     res.status(500).json({ message: 'Internal server error' })
