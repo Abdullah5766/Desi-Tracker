@@ -70,6 +70,41 @@ const handler = async (req, res) => {
       res.status(500).json({ message: 'Internal server error' })
     }
 
+  } else if (req.method === 'DELETE') {
+    // Delete food entry
+    try {
+      const { entryId } = req.query
+      
+      if (!entryId) {
+        return res.status(400).json({ message: 'Entry ID is required' })
+      }
+
+      // First verify the entry belongs to the authenticated user
+      const existingEntry = await prisma.foodEntry.findFirst({
+        where: {
+          id: entryId,
+          userId: req.userId
+        }
+      })
+
+      if (!existingEntry) {
+        return res.status(404).json({ message: 'Food entry not found' })
+      }
+
+      // Delete the entry
+      await prisma.foodEntry.delete({
+        where: {
+          id: entryId
+        }
+      })
+
+      res.status(200).json({ message: 'Food entry deleted successfully' })
+
+    } catch (error) {
+      console.error('Delete food entry error:', error)
+      res.status(500).json({ message: 'Internal server error' })
+    }
+
   } else {
     res.status(405).json({ message: 'Method not allowed' })
   }

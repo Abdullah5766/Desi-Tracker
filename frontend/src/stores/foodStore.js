@@ -500,7 +500,7 @@ export const useFoodStore = create((set, get) => ({
       
       if (!isCustomEntry) {
         // Only call API for non-custom entries
-        await api.delete(`/food-entries/${entryId}`)
+        await api.delete(`/food-entries?entryId=${entryId}`)
       } else {
         // Remove from localStorage for custom entries
         get().removeCustomFoodEntry(entryId)
