@@ -486,9 +486,16 @@ const SearchResultItem = ({ food, onSelect }) => (
 )
 
 const MealSection = ({ mealType, mealLabel, entries, onAddFood, onDeleteEntry }) => {
-  const totalCalories = entries.reduce((sum, entry) => 
-    sum + (entry.nutritionalValues?.calories || 0), 0
-  )
+  const totalCalories = entries.reduce((sum, entry) => {
+    const nutrition = entry.nutritionalValues || entry.food
+    if (!nutrition) return sum
+    
+    const quantity = entry.quantity || 1
+    const servingSize = entry.food?.servingSize || 100
+    const multiplier = quantity / servingSize
+    
+    return sum + Math.round((nutrition.calories || 0) * multiplier)
+  }, 0)
 
   return (
     <motion.div 
@@ -592,6 +599,25 @@ const FoodEntryItem = ({ entry, onDelete }) => {
     await onDelete(entry.id)
   }
 
+  // Calculate actual nutritional values based on quantity
+  const calculateNutrition = () => {
+    const nutrition = entry.nutritionalValues || entry.food
+    if (!nutrition) return { calories: 0, protein: 0, carbs: 0, fat: 0 }
+    
+    const quantity = entry.quantity || 1
+    const servingSize = entry.food?.servingSize || 100
+    const multiplier = quantity / servingSize
+    
+    return {
+      calories: Math.round((nutrition.calories || 0) * multiplier),
+      protein: Math.round((nutrition.protein || 0) * multiplier * 10) / 10,
+      carbs: Math.round((nutrition.carbs || 0) * multiplier * 10) / 10,
+      fat: Math.round((nutrition.fat || 0) * multiplier * 10) / 10
+    }
+  }
+
+  const nutritionValues = calculateNutrition()
+
   return (
     <div className="flex items-center justify-between p-3 bg-gray-700 rounded-lg">
       <div className="flex-1">
@@ -612,15 +638,15 @@ const FoodEntryItem = ({ entry, onDelete }) => {
         </div>
         <div className="flex space-x-4 text-xs text-gray-500">
           <span>
-            {Math.round(entry.nutritionalValues?.calories || 0)} cal
+            {nutritionValues.calories} cal
           </span>
           {entry.food?.isCustom ? (
             <span className="text-orange-400">Calories only</span>
           ) : (
             <>
-              <span>P: {Math.round((entry.nutritionalValues?.protein || 0) * 10) / 10}g</span>
-              <span>C: {Math.round((entry.nutritionalValues?.carbs || 0) * 10) / 10}g</span>
-              <span>F: {Math.round((entry.nutritionalValues?.fat || 0) * 10) / 10}g</span>
+              <span>P: {nutritionValues.protein}g</span>
+              <span>C: {nutritionValues.carbs}g</span>
+              <span>F: {nutritionValues.fat}g</span>
             </>
           )}
         </div>
