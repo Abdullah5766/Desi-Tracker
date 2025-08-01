@@ -10,6 +10,7 @@ export const useAuthStore = create(
       token: null,
       isAuthenticated: false,
       isLoading: false,
+      isInitializing: true,
 
       login: async (email, password) => {
         set({ isLoading: true })
@@ -35,7 +36,8 @@ export const useAuthStore = create(
             user,
             token,
             isAuthenticated: true,
-            isLoading: false
+            isLoading: false,
+            isInitializing: false
           })
 
           // Set token in api headers
@@ -45,7 +47,7 @@ export const useAuthStore = create(
           return { success: true }
 
         } catch (error) {
-          set({ isLoading: false })
+          set({ isLoading: false, isInitializing: false })
           const message = error.response?.data?.message || 'Login failed'
           toast.error(message)
           return { success: false, message }
@@ -75,7 +77,8 @@ export const useAuthStore = create(
             user,
             token,
             isAuthenticated: true,
-            isLoading: false
+            isLoading: false,
+            isInitializing: false
           })
 
           // Set token in api headers
@@ -85,7 +88,7 @@ export const useAuthStore = create(
           return { success: true }
 
         } catch (error) {
-          set({ isLoading: false })
+          set({ isLoading: false, isInitializing: false })
           const message = error.response?.data?.message || 'Registration failed'
           toast.error(message)
           return { success: false, message }
@@ -98,7 +101,8 @@ export const useAuthStore = create(
           user: null,
           token: null,
           isAuthenticated: false,
-          isLoading: false
+          isLoading: false,
+          isInitializing: false
         })
 
         // Remove token from api headers
@@ -111,7 +115,7 @@ export const useAuthStore = create(
         const { token, user: currentUser } = get()
         
         if (!token) {
-          set({ isLoading: false })
+          set({ isLoading: false, isAuthenticated: false, isInitializing: false })
           return
         }
 
@@ -134,7 +138,8 @@ export const useAuthStore = create(
           set({
             user,
             isAuthenticated: true,
-            isLoading: false
+            isLoading: false,
+            isInitializing: false
           })
 
         } catch (error) {
@@ -145,7 +150,8 @@ export const useAuthStore = create(
             user: null,
             token: null,
             isAuthenticated: false,
-            isLoading: false
+            isLoading: false,
+            isInitializing: false
           })
           
           delete api.defaults.headers.common['Authorization']

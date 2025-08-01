@@ -7,7 +7,7 @@ import Dashboard from './pages/Dashboard'
 import LoadingSpinner from './components/common/LoadingSpinner'
 
 function App() {
-  const { isAuthenticated, isLoading, checkAuth, initializeAuth } = useAuthStore()
+  const { isAuthenticated, isLoading, isInitializing, checkAuth, initializeAuth } = useAuthStore()
 
   useEffect(() => {
     // Clear any existing toast notifications
@@ -17,7 +17,7 @@ function App() {
     checkAuth()
   }, [checkAuth, initializeAuth])
 
-  if (isLoading) {
+  if (isLoading || isInitializing) {
     return (
       <div className="min-h-screen bg-gray-900 flex items-center justify-center">
         <LoadingSpinner size="lg" />
