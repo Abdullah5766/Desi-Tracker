@@ -1117,8 +1117,8 @@ const WeeklyCalorieChart = () => {
           Weekly Caloric Intake
         </h3>
         
-        {/* Weekly Progress Bar */}
-        <div className="flex items-center space-x-3">
+        {/* Weekly Progress Bar - Hidden on mobile */}
+        <div className="hidden sm:flex items-center space-x-3">
           <div className="text-right">
             <p className="text-sm font-medium text-white">
               {weeklyTotalCalories.toLocaleString()} / {weeklyGoal.toLocaleString()} cal
@@ -1144,7 +1144,7 @@ const WeeklyCalorieChart = () => {
         </div>
       ) : (
         <div className="space-y-4">
-          <div className="flex items-end justify-between h-48 px-2">
+          <div className="flex items-end justify-between h-40 sm:h-48 px-1 sm:px-2">
             {weekDates.map((day) => {
               const dayData = weeklyTotals.find(d => d.date === day.date)
               const calories = dayData?.calories || 0
@@ -1154,10 +1154,10 @@ const WeeklyCalorieChart = () => {
               return (
                 <div 
                   key={day.date} 
-                  className="flex flex-col items-center flex-1 mx-1"
+                  className="flex flex-col items-center flex-1 mx-0.5 sm:mx-1"
                 >
                   {/* Bar */}
-                  <div className="w-full flex flex-col justify-end h-40 mb-2">
+                  <div className="w-full flex flex-col justify-end h-32 sm:h-40 mb-1 sm:mb-2">
                     <motion.div
                       className={`w-full rounded-t-md ${
                         isToday
@@ -1173,8 +1173,8 @@ const WeeklyCalorieChart = () => {
                   </div>
                   
                   {/* Calories */}
-                  <div className="text-center mb-2">
-                    <p className={`text-sm font-semibold ${isToday ? 'text-purple-400' : 'text-white'}`}>
+                  <div className="text-center mb-1 sm:mb-2">
+                    <p className={`text-xs sm:text-sm font-semibold ${isToday ? 'text-purple-400' : 'text-white'}`}>
                       {calories}
                     </p>
                     <p className="text-xs text-gray-500">cal</p>
