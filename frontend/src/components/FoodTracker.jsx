@@ -66,6 +66,7 @@ const FoodTracker = () => {
 
   const [searchModalOpen, setSearchModalOpen] = useState(false)
   const [customFoodModalOpen, setCustomFoodModalOpen] = useState(false)
+  const [selectedMealTypeForAdd, setSelectedMealTypeForAdd] = useState('breakfast')
 
   useEffect(() => {
     if (isReady()) {
@@ -90,7 +91,8 @@ const FoodTracker = () => {
     debouncedSearch(query)
   }
 
-  const openSearchModal = () => {
+  const openSearchModal = (mealType = 'breakfast') => {
+    setSelectedMealTypeForAdd(mealType)
     setSearchModalOpen(true)
     clearSearch()
   }
@@ -109,8 +111,10 @@ const FoodTracker = () => {
     setCustomFoodModalOpen(false)
   }
 
-  const handleFoodSelect = (food, mealType = 'breakfast') => {
-    openAddFoodModal(food, mealType)
+  const handleFoodSelect = (food, mealType = null) => {
+    // Use the selected meal type for add, or fallback to the passed mealType
+    const finalMealType = mealType || selectedMealTypeForAdd
+    openAddFoodModal(food, finalMealType)
     closeSearchModal()
   }
 
@@ -351,7 +355,7 @@ const FoodTracker = () => {
                   mealType={mealType}
                   mealLabel={mealTypeLabels[mealType]}
                   entries={entries}
-                  onAddFood={() => openSearchModal()}
+                  onAddFood={() => openSearchModal(mealType)}
                   onDeleteEntry={deleteFoodEntry}
                 />
               </motion.div>
@@ -444,6 +448,7 @@ const FoodTracker = () => {
       <CustomFoodModal 
         isOpen={customFoodModalOpen}
         onClose={closeCustomFoodModal}
+        defaultMealType={selectedMealTypeForAdd}
       />
     </motion.div>
   )
@@ -852,12 +857,19 @@ const AddFoodModal = () => {
   )
 }
 
-const CustomFoodModal = ({ isOpen, onClose }) => {
+const CustomFoodModal = ({ isOpen, onClose, defaultMealType = 'breakfast' }) => {
   const { addCustomFoodEntry } = useFoodStore()
   const [foodName, setFoodName] = useState('')
   const [calories, setCalories] = useState('')
-  const [mealType, setMealType] = useState('breakfast')
+  const [mealType, setMealType] = useState(defaultMealType)
   const [isSubmitting, setIsSubmitting] = useState(false)
+  
+  // Update meal type when default changes
+  useEffect(() => {
+    if (isOpen) {
+      setMealType(defaultMealType)
+    }
+  }, [defaultMealType, isOpen])
 
   const handleSubmit = async (e) => {
     e.preventDefault()
