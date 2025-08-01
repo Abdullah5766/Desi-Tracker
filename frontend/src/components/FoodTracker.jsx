@@ -499,13 +499,13 @@ const MealSection = ({ mealType, mealLabel, entries, onAddFood, onDeleteEntry })
 
   return (
     <motion.div 
-      className="card"
+      className="card h-80 flex flex-col"
       whileHover={{ scale: 1.02, transition: { duration: 0.2 } }}
       initial={{ opacity: 0, y: 20 }}
       animate={{ opacity: 1, y: 0 }}
       transition={{ duration: 0.4 }}
     >
-      <div className="flex items-center justify-between mb-4">
+      <div className="flex items-center justify-between mb-4 flex-shrink-0">
         <div className="flex items-center space-x-3">
           <motion.div
             whileHover={{ scale: 1.1, rotate: 5 }}
@@ -540,56 +540,58 @@ const MealSection = ({ mealType, mealLabel, entries, onAddFood, onDeleteEntry })
         </motion.button>
       </div>
 
-      <AnimatePresence mode="wait">
-        {entries.length > 0 ? (
-          <motion.div 
-            className="space-y-3"
-            initial={{ opacity: 0 }}
-            animate={{ opacity: 1 }}
-            exit={{ opacity: 0 }}
-            transition={{ duration: 0.3 }}
-          >
-            {entries.map((entry, index) => (
-              <motion.div
-                key={entry.id}
-                initial={{ opacity: 0, x: -20 }}
-                animate={{ opacity: 1, x: 0 }}
-                exit={{ opacity: 0, x: 20 }}
-                transition={{ duration: 0.3, delay: index * 0.05 }}
-              >
-                <FoodEntryItem
-                  entry={entry}
-                  onDelete={onDeleteEntry}
-                />
-              </motion.div>
-            ))}
-          </motion.div>
-        ) : (
-          <motion.div 
-            className="text-center py-8 border-2 border-dashed border-gray-600 rounded-lg"
-            initial={{ opacity: 0, scale: 0.9 }}
-            animate={{ opacity: 1, scale: 1 }}
-            exit={{ opacity: 0, scale: 0.9 }}
-            transition={{ duration: 0.3 }}
-          >
-            <motion.div
-              animate={{ y: [0, -5, 0] }}
-              transition={{ duration: 2, repeat: Infinity, ease: "easeInOut" }}
+      <div className="flex-1 overflow-hidden">
+        <AnimatePresence mode="wait">
+          {entries.length > 0 ? (
+            <motion.div 
+              className="h-full overflow-y-auto space-y-3 pr-2 scrollbar-thin"
+              initial={{ opacity: 0 }}
+              animate={{ opacity: 1 }}
+              exit={{ opacity: 0 }}
+              transition={{ duration: 0.3 }}
             >
-              <Utensils className="w-8 h-8 text-gray-600 mx-auto mb-2" />
+              {entries.map((entry, index) => (
+                <motion.div
+                  key={entry.id}
+                  initial={{ opacity: 0, x: -20 }}
+                  animate={{ opacity: 1, x: 0 }}
+                  exit={{ opacity: 0, x: 20 }}
+                  transition={{ duration: 0.3, delay: index * 0.05 }}
+                >
+                  <FoodEntryItem
+                    entry={entry}
+                    onDelete={onDeleteEntry}
+                  />
+                </motion.div>
+              ))}
             </motion.div>
-            <p className="text-gray-400">No foods logged for {mealLabel.toLowerCase()}</p>
-            <motion.button
-              onClick={onAddFood}
-              className="text-purple-400 hover:text-purple-300 text-sm mt-2"
-              whileHover={{ scale: 1.05 }}
-              whileTap={{ scale: 0.95 }}
+          ) : (
+            <motion.div 
+              className="h-full flex flex-col items-center justify-center text-center border-2 border-dashed border-gray-600 rounded-lg"
+              initial={{ opacity: 0, scale: 0.9 }}
+              animate={{ opacity: 1, scale: 1 }}
+              exit={{ opacity: 0, scale: 0.9 }}
+              transition={{ duration: 0.3 }}
             >
-              Add your first food
-            </motion.button>
-          </motion.div>
-        )}
-      </AnimatePresence>
+              <motion.div
+                animate={{ y: [0, -5, 0] }}
+                transition={{ duration: 2, repeat: Infinity, ease: "easeInOut" }}
+              >
+                <Utensils className="w-8 h-8 text-gray-600 mx-auto mb-2" />
+              </motion.div>
+              <p className="text-gray-400 mb-2">No foods logged for {mealLabel.toLowerCase()}</p>
+              <motion.button
+                onClick={onAddFood}
+                className="text-purple-400 hover:text-purple-300 text-sm"
+                whileHover={{ scale: 1.05 }}
+                whileTap={{ scale: 0.95 }}
+              >
+                Add your first food
+              </motion.button>
+            </motion.div>
+          )}
+        </AnimatePresence>
+      </div>
     </motion.div>
   )
 }
