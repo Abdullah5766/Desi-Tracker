@@ -115,10 +115,10 @@ const FoodTracker = () => {
   }
 
   const groupedEntries = {
-    breakfast: todayEntries.filter(entry => entry.mealType === 'breakfast'),
-    lunch: todayEntries.filter(entry => entry.mealType === 'lunch'),
-    dinner: todayEntries.filter(entry => entry.mealType === 'dinner'),
-    snack: todayEntries.filter(entry => entry.mealType === 'snack')
+    breakfast: todayEntries.filter(entry => (entry.mealType || entry.meal)?.toLowerCase() === 'breakfast'),
+    lunch: todayEntries.filter(entry => (entry.mealType || entry.meal)?.toLowerCase() === 'lunch'),
+    dinner: todayEntries.filter(entry => (entry.mealType || entry.meal)?.toLowerCase() === 'dinner'),
+    snack: todayEntries.filter(entry => (entry.mealType || entry.meal)?.toLowerCase() === 'snack')
   }
 
   // Debug logging

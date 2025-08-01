@@ -189,11 +189,16 @@ export const useFoodStore = create((set, get) => ({
         
         // Calculate totals using the same logic as calculateDailyTotals
         const dayTotals = allEntries.reduce((acc, entry) => {
-          if (entry.nutritionalValues) {
-            acc.calories += entry.nutritionalValues.calories || 0
-            acc.protein += entry.nutritionalValues.protein || 0
-            acc.carbs += entry.nutritionalValues.carbs || 0
-            acc.fat += entry.nutritionalValues.fat || 0
+          const nutrition = entry.nutritionalValues || entry.food
+          if (nutrition) {
+            const quantity = entry.quantity || 1
+            const servingSize = entry.food?.servingSize || 100
+            const multiplier = quantity / servingSize
+            
+            acc.calories += (nutrition.calories || 0) * multiplier
+            acc.protein += (nutrition.protein || 0) * multiplier
+            acc.carbs += (nutrition.carbs || 0) * multiplier
+            acc.fat += (nutrition.fat || 0) * multiplier
           }
           return acc
         }, { calories: 0, protein: 0, carbs: 0, fat: 0 })
@@ -337,11 +342,16 @@ export const useFoodStore = create((set, get) => ({
         
         // Calculate totals
         const dayTotals = allEntries.reduce((acc, entry) => {
-          if (entry.nutritionalValues) {
-            acc.calories += entry.nutritionalValues.calories || 0
-            acc.protein += entry.nutritionalValues.protein || 0
-            acc.carbs += entry.nutritionalValues.carbs || 0
-            acc.fat += entry.nutritionalValues.fat || 0
+          const nutrition = entry.nutritionalValues || entry.food
+          if (nutrition) {
+            const quantity = entry.quantity || 1
+            const servingSize = entry.food?.servingSize || 100
+            const multiplier = quantity / servingSize
+            
+            acc.calories += (nutrition.calories || 0) * multiplier
+            acc.protein += (nutrition.protein || 0) * multiplier
+            acc.carbs += (nutrition.carbs || 0) * multiplier
+            acc.fat += (nutrition.fat || 0) * multiplier
           }
           return acc
         }, { calories: 0, protein: 0, carbs: 0, fat: 0 })
@@ -654,11 +664,18 @@ export const useFoodStore = create((set, get) => ({
     const { todayEntries } = get()
     
     const totals = todayEntries.reduce((acc, entry) => {
-      if (entry.nutritionalValues) {
-        acc.calories += entry.nutritionalValues.calories || 0
-        acc.protein += entry.nutritionalValues.protein || 0
-        acc.carbs += entry.nutritionalValues.carbs || 0
-        acc.fat += entry.nutritionalValues.fat || 0
+      // Handle both API entry format (entry.food) and custom entry format (entry.nutritionalValues)
+      const nutrition = entry.nutritionalValues || entry.food
+      if (nutrition) {
+        // Calculate actual nutritional values based on quantity
+        const quantity = entry.quantity || 1
+        const servingSize = entry.food?.servingSize || 100
+        const multiplier = quantity / servingSize
+        
+        acc.calories += (nutrition.calories || 0) * multiplier
+        acc.protein += (nutrition.protein || 0) * multiplier
+        acc.carbs += (nutrition.carbs || 0) * multiplier
+        acc.fat += (nutrition.fat || 0) * multiplier
         acc.entries += 1
       }
       return acc
@@ -682,7 +699,7 @@ export const useFoodStore = create((set, get) => ({
   // Get entries by meal type
   getEntriesByMealType: (mealType) => {
     const { todayEntries } = get()
-    return todayEntries.filter(entry => entry.mealType === mealType)
+    return todayEntries.filter(entry => (entry.mealType || entry.meal)?.toLowerCase() === mealType.toLowerCase())
   },
 
   // Get totals by meal type
@@ -690,11 +707,16 @@ export const useFoodStore = create((set, get) => ({
     const entries = get().getEntriesByMealType(mealType)
     
     return entries.reduce((acc, entry) => {
-      if (entry.nutritionalValues) {
-        acc.calories += entry.nutritionalValues.calories || 0
-        acc.protein += entry.nutritionalValues.protein || 0
-        acc.carbs += entry.nutritionalValues.carbs || 0
-        acc.fat += entry.nutritionalValues.fat || 0
+      const nutrition = entry.nutritionalValues || entry.food
+      if (nutrition) {
+        const quantity = entry.quantity || 1
+        const servingSize = entry.food?.servingSize || 100
+        const multiplier = quantity / servingSize
+        
+        acc.calories += (nutrition.calories || 0) * multiplier
+        acc.protein += (nutrition.protein || 0) * multiplier
+        acc.carbs += (nutrition.carbs || 0) * multiplier
+        acc.fat += (nutrition.fat || 0) * multiplier
       }
       return acc
     }, {
