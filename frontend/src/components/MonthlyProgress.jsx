@@ -9,7 +9,7 @@ import { useAuthStore } from '../stores/authStore'
 
 const MonthlyProgress = () => {
   const { user } = useAuthStore()
-  const { calculatedCalories, calculateTDEE, weight } = useCalorieStore()
+  const { calculatedCalories, calculateTDEE, weight, goal } = useCalorieStore()
   const { fetchMonthlyTotals, monthlyTotals, isLoadingMonthly } = useFoodStore()
   const [weeklyPredictions, setWeeklyPredictions] = useState([])
 
@@ -125,7 +125,33 @@ const MonthlyProgress = () => {
   const totalMonthlyCalories = monthlyTotals.reduce((sum, day) => sum + day.calories, 0)
   const totalMonthlyGoal = calculatedCalories ? calculatedCalories * monthlyTotals.length : 0
   const monthlyDeficit = totalMonthlyGoal - totalMonthlyCalories
-  const isInDeficit = monthlyDeficit > 0
+  
+  // Get goal display information
+  const getGoalDisplayInfo = () => {
+    switch (goal) {
+      case 'lose':
+        return {
+          text: 'Weight Loss',
+          color: 'bg-green-500/20 text-green-400 border border-green-500/30',
+          icon: TrendingDown
+        }
+      case 'gain':
+        return {
+          text: 'Weight Gain',
+          color: 'bg-blue-500/20 text-blue-400 border border-blue-500/30',
+          icon: TrendingUp
+        }
+      case 'maintain':
+      default:
+        return {
+          text: 'Maintain Weight',
+          color: 'bg-yellow-500/20 text-yellow-400 border border-yellow-500/30',
+          icon: Target
+        }
+    }
+  }
+  
+  const goalInfo = getGoalDisplayInfo()
 
   // Calculate theoretical predicted weight change (if user sticks to calorie goal)
   const calculateTheoreticalWeightChange = () => {
@@ -156,24 +182,11 @@ const MonthlyProgress = () => {
             Monthly Progress Tracker
           </h2>
           
-          <div 
-            className={`px-4 py-2 rounded-full text-sm font-medium ${
-              isInDeficit 
-                ? 'bg-green-500/20 text-green-400 border border-green-500/30' 
-                : 'bg-red-500/20 text-red-400 border border-red-500/30'
-            }`}
-          >
-            {isInDeficit ? (
-              <div className="flex items-center space-x-1">
-                <TrendingDown className="w-4 h-4" />
-                <span>Deficit</span>
-              </div>
-            ) : (
-              <div className="flex items-center space-x-1">
-                <TrendingUp className="w-4 h-4" />
-                <span>Surplus</span>
-              </div>
-            )}
+          <div className={`px-4 py-2 rounded-full text-sm font-medium ${goalInfo.color}`}>
+            <div className="flex items-center space-x-1">
+              <goalInfo.icon className="w-4 h-4" />
+              <span>{goalInfo.text}</span>
+            </div>
           </div>
         </div>
 
