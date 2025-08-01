@@ -414,7 +414,7 @@ export const useFoodStore = create((set, get) => ({
       const response = await api.post('/food-entries', {
         foodId,
         quantity: parseFloat(quantity),
-        mealType,
+        mealType: mealType.toLowerCase(), // Ensure lowercase
         date: entryDate
       })
 
