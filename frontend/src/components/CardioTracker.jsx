@@ -706,8 +706,11 @@ const WeeklyCardioChart = () => {
   const { fetchWeeklyTotals, weeklyTotals, isLoadingWeekly } = useCardioStore()
 
   useEffect(() => {
-    fetchWeeklyTotals()
-  }, [fetchWeeklyTotals])
+    // Only fetch if we don't have data yet
+    if (weeklyTotals.length === 0) {
+      fetchWeeklyTotals()
+    }
+  }, [fetchWeeklyTotals, weeklyTotals.length])
 
   // Generate current week dates (Monday to Sunday) - use local timezone
   const getWeekDates = () => {
@@ -738,73 +741,34 @@ const WeeklyCardioChart = () => {
   const weeklyTotalDuration = weeklyTotals.reduce((sum, day) => sum + day.totalDuration, 0)
 
   return (
-    <motion.div 
-      className="card"
-      variants={itemVariants}
-      whileHover={{ scale: 1.01, transition: { duration: 0.2 } }}
-    >
+    <div className="card">
       <div className="flex items-center justify-between mb-6">
-        <motion.h3 
-          className="text-xl font-semibold text-white flex items-center"
-          initial={{ opacity: 0, x: -20 }}
-          animate={{ opacity: 1, x: 0 }}
-          transition={{ duration: 0.4 }}
-        >
-          <motion.div
-            whileHover={{ scale: 1.1, rotate: 5 }}
-            transition={{ duration: 0.2 }}
-          >
-            <Flame className="w-5 h-5 mr-2 text-red-400" />
-          </motion.div>
+        <h3 className="text-xl font-semibold text-white flex items-center">
+          <Flame className="w-5 h-5 mr-2 text-red-400" />
           Weekly Cardio Summary
-        </motion.h3>
+        </h3>
         
         {/* Weekly Progress Summary */}
-        <motion.div 
-          className="flex items-center space-x-6"
-          initial={{ opacity: 0, x: 20 }}
-          animate={{ opacity: 1, x: 0 }}
-          transition={{ duration: 0.4, delay: 0.2 }}
-        >
+        <div className="flex items-center space-x-6">
           <div className="text-right">
-            <motion.p 
-              className="text-sm font-medium text-red-400"
-              initial={{ opacity: 0 }}
-              animate={{ opacity: 1 }}
-              transition={{ duration: 0.3, delay: 0.3 }}
-            >
+            <p className="text-sm font-medium text-red-400">
               {weeklyTotalCalories} cal burned
-            </motion.p>
-            <motion.p 
-              className="text-xs text-gray-400"
-              initial={{ opacity: 0 }}
-              animate={{ opacity: 1 }}
-              transition={{ duration: 0.3, delay: 0.4 }}
-            >
+            </p>
+            <p className="text-xs text-gray-400">
               {Math.floor(weeklyTotalDuration / 60)}h {weeklyTotalDuration % 60}m total
-            </motion.p>
+            </p>
           </div>
-        </motion.div>
+        </div>
       </div>
 
       {isLoadingWeekly ? (
-        <motion.div 
-          className="flex justify-center py-8"
-          initial={{ opacity: 0 }}
-          animate={{ opacity: 1 }}
-          transition={{ duration: 0.3 }}
-        >
+        <div className="flex justify-center py-8">
           <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-red-400"></div>
-        </motion.div>
+        </div>
       ) : (
-        <motion.div 
-          className="space-y-4"
-          initial={{ opacity: 0, y: 20 }}
-          animate={{ opacity: 1, y: 0 }}
-          transition={{ duration: 0.6, delay: 0.4 }}
-        >
+        <div className="space-y-4">
           <div className="flex items-end justify-between h-48 px-2">
-            {weekDates.map((day, index) => {
+            {weekDates.map((day) => {
               const dayData = weeklyTotals.find(d => d.date === day.date)
               const calories = dayData?.totalCalories || 0
               const duration = dayData?.totalDuration || 0
@@ -817,13 +781,9 @@ const WeeklyCardioChart = () => {
               const isToday = day.date === todayString
 
               return (
-                <motion.div 
+                <div 
                   key={day.date} 
                   className="flex flex-col items-center flex-1 mx-1"
-                  initial={{ opacity: 0, y: 20 }}
-                  animate={{ opacity: 1, y: 0 }}
-                  transition={{ duration: 0.4, delay: 0.6 + index * 0.1 }}
-                  whileHover={{ scale: 1.05, transition: { duration: 0.2 } }}
                 >
                   {/* Bar */}
                   <div className="w-full flex flex-col justify-end h-40 mb-2">
@@ -837,17 +797,12 @@ const WeeklyCardioChart = () => {
                       }`}
                       initial={{ height: '2%' }}
                       animate={{ height: `${Math.max(height, 2)}%` }}
-                      transition={{ duration: 0.8, delay: 0.8 + index * 0.1, ease: "easeOut" }}
+                      transition={{ duration: 0.5, ease: "easeOut" }}
                     />
                   </div>
                   
                   {/* Calories */}
-                  <motion.div 
-                    className="text-center mb-2"
-                    initial={{ opacity: 0 }}
-                    animate={{ opacity: 1 }}
-                    transition={{ duration: 0.4, delay: 1 + index * 0.1 }}
-                  >
+                  <div className="text-center mb-2">
                     <p className={`text-sm font-semibold ${isToday ? 'text-red-400' : 'text-white'}`}>
                       {calories}
                     </p>
@@ -855,59 +810,40 @@ const WeeklyCardioChart = () => {
                     {duration > 0 && (
                       <p className="text-xs text-gray-500">{duration}m</p>
                     )}
-                  </motion.div>
+                  </div>
                   
                   {/* Day */}
-                  <motion.div 
-                    className="text-center"
-                    initial={{ opacity: 0 }}
-                    animate={{ opacity: 1 }}
-                    transition={{ duration: 0.4, delay: 1.1 + index * 0.1 }}
-                  >
+                  <div className="text-center">
                     <p className={`text-xs font-medium ${isToday ? 'text-red-400' : 'text-gray-300'}`}>
                       {day.dayName}
                     </p>
                     <p className={`text-xs ${isToday ? 'text-red-300' : 'text-gray-500'}`}>
                       {day.dayNumber}
                     </p>
-                  </motion.div>
-                </motion.div>
+                  </div>
+                </div>
               )
             })}
           </div>
 
           {/* Legend */}
-          <motion.div 
-            className="flex justify-center items-center space-x-6 pt-4 border-t border-gray-700"
-            initial={{ opacity: 0 }}
-            animate={{ opacity: 1 }}
-            transition={{ duration: 0.4, delay: 1.5 }}
-          >
-            <motion.div 
-              className="flex items-center space-x-2"
-              whileHover={{ scale: 1.05, transition: { duration: 0.2 } }}
-            >
+          <div className="flex justify-center items-center space-x-6 pt-4 border-t border-gray-700">
+            <div className="flex items-center space-x-2">
               <div className="w-3 h-3 rounded bg-gradient-to-t from-red-600 to-red-400"></div>
               <span className="text-xs text-gray-400">Today</span>
-            </motion.div>
-            <motion.div 
-              className="flex items-center space-x-2"
-              whileHover={{ scale: 1.05, transition: { duration: 0.2 } }}
-            >
+            </div>
+            <div className="flex items-center space-x-2">
               <div className="w-3 h-3 rounded bg-gradient-to-t from-gray-600 to-gray-400"></div>
               <span className="text-xs text-gray-400">Other Days</span>
-            </motion.div>
-            <motion.div 
-              className="flex items-center space-x-2"
-              whileHover={{ scale: 1.05, transition: { duration: 0.2 } }}
-            >
+            </div>
+            <div className="flex items-center space-x-2">
               <Heart className="w-3 h-3 text-red-400" />
               <span className="text-xs text-gray-400">Cardio Activities</span>
-            </motion.div>
-          </motion.div>
-        </motion.div>
+            </div>
+          </div>
+        </div>
       )}
-    </motion.div>
+    </div>
   )
 }
 

@@ -1067,8 +1067,11 @@ const WeeklyCalorieChart = () => {
   const { calculatedCalories } = useCalorieStore()
 
   useEffect(() => {
-    fetchWeeklyTotals()
-  }, [fetchWeeklyTotals])
+    // Only fetch if we don't have data yet
+    if (weeklyTotals.length === 0) {
+      fetchWeeklyTotals()
+    }
+  }, [fetchWeeklyTotals, weeklyTotals.length])
 
   // Generate current week dates (Monday to Sunday) - use local timezone
   const getWeekDates = () => {
@@ -1100,63 +1103,39 @@ const WeeklyCalorieChart = () => {
   const weeklyProgress = weeklyGoal > 0 ? Math.min((weeklyTotalCalories / weeklyGoal) * 100, 100) : 0
 
   return (
-    <motion.div 
-      className="card"
-      whileHover={{ scale: 1.01, transition: { duration: 0.2 } }}
-    >
+    <div className="card">
       <div className="flex items-center justify-between mb-6">
-        <motion.h3 
-          className="text-xl font-semibold text-white flex items-center"
-          initial={{ opacity: 0, x: -20 }}
-          animate={{ opacity: 1, x: 0 }}
-          transition={{ duration: 0.4 }}
-        >
-          <motion.svg 
+        <h3 className="text-xl font-semibold text-white flex items-center">
+          <svg 
             className="w-5 h-5 mr-2 text-purple-400" 
             fill="none" 
             stroke="currentColor" 
             viewBox="0 0 24 24"
-            whileHover={{ scale: 1.1, transition: { duration: 0.2 } }}
           >
             <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 19v-6a2 2 0 00-2-2H5a2 2 0 00-2 2v6a2 2 0 002 2h2a2 2 0 002-2zm0 0V9a2 2 0 012-2h2a2 2 0 012 2v10m-6 0a2 2 0 002 2h2a2 2 0 002-2m0 0V5a2 2 0 012-2h2a2 2 0 012 2v14a2 2 0 01-2 2h-2a2 2 0 01-2-2z" />
-          </motion.svg>
+          </svg>
           Weekly Caloric Intake
-        </motion.h3>
+        </h3>
         
         {/* Weekly Progress Bar */}
-        <motion.div 
-          className="flex items-center space-x-3"
-          initial={{ opacity: 0, x: 20 }}
-          animate={{ opacity: 1, x: 0 }}
-          transition={{ duration: 0.4, delay: 0.2 }}
-        >
+        <div className="flex items-center space-x-3">
           <div className="text-right">
-            <motion.p 
-              className="text-sm font-medium text-white"
-              initial={{ opacity: 0 }}
-              animate={{ opacity: 1 }}
-              transition={{ duration: 0.4, delay: 0.3 }}
-            >
+            <p className="text-sm font-medium text-white">
               {weeklyTotalCalories.toLocaleString()} / {weeklyGoal.toLocaleString()} cal
-            </motion.p>
-            <motion.p 
-              className="text-xs text-gray-400"
-              initial={{ opacity: 0 }}
-              animate={{ opacity: 1 }}
-              transition={{ duration: 0.4, delay: 0.4 }}
-            >
+            </p>
+            <p className="text-xs text-gray-400">
               {Math.round(weeklyProgress)}% of weekly goal
-            </motion.p>
+            </p>
           </div>
           <div className="w-32 h-2 bg-gray-700 rounded-full overflow-hidden">
             <motion.div 
               className="h-full bg-gradient-to-r from-purple-600 to-purple-400"
               initial={{ width: 0 }}
               animate={{ width: `${weeklyProgress}%` }}
-              transition={{ duration: 1, delay: 0.5, ease: "easeOut" }}
+              transition={{ duration: 0.6, ease: "easeOut" }}
             />
           </div>
-        </motion.div>
+        </div>
       </div>
 
       {isLoadingWeekly ? (
@@ -1164,27 +1143,18 @@ const WeeklyCalorieChart = () => {
           <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-purple-400"></div>
         </div>
       ) : (
-        <motion.div 
-          className="space-y-4"
-          initial={{ opacity: 0, y: 20 }}
-          animate={{ opacity: 1, y: 0 }}
-          transition={{ duration: 0.6, delay: 0.4 }}
-        >
+        <div className="space-y-4">
           <div className="flex items-end justify-between h-48 px-2">
-            {weekDates.map((day, index) => {
+            {weekDates.map((day) => {
               const dayData = weeklyTotals.find(d => d.date === day.date)
               const calories = dayData?.calories || 0
               const height = maxCalories > 0 ? (calories / maxCalories) * 100 : 0
               const isToday = day.date === new Date().toISOString().split('T')[0]
 
               return (
-                <motion.div 
+                <div 
                   key={day.date} 
                   className="flex flex-col items-center flex-1 mx-1"
-                  initial={{ opacity: 0, y: 20 }}
-                  animate={{ opacity: 1, y: 0 }}
-                  transition={{ duration: 0.4, delay: 0.6 + index * 0.1 }}
-                  whileHover={{ scale: 1.05, transition: { duration: 0.2 } }}
                 >
                   {/* Bar */}
                   <div className="w-full flex flex-col justify-end h-40 mb-2">
@@ -1198,67 +1168,46 @@ const WeeklyCalorieChart = () => {
                       }`}
                       initial={{ height: '2%' }}
                       animate={{ height: `${Math.max(height, 2)}%` }}
-                      transition={{ duration: 0.8, delay: 0.8 + index * 0.1, ease: "easeOut" }}
+                      transition={{ duration: 0.5, ease: "easeOut" }}
                     />
                   </div>
                   
                   {/* Calories */}
-                  <motion.div 
-                    className="text-center mb-2"
-                    initial={{ opacity: 0 }}
-                    animate={{ opacity: 1 }}
-                    transition={{ duration: 0.4, delay: 1 + index * 0.1 }}
-                  >
+                  <div className="text-center mb-2">
                     <p className={`text-sm font-semibold ${isToday ? 'text-purple-400' : 'text-white'}`}>
                       {calories}
                     </p>
                     <p className="text-xs text-gray-500">cal</p>
-                  </motion.div>
+                  </div>
                   
                   {/* Day */}
-                  <motion.div 
-                    className="text-center"
-                    initial={{ opacity: 0 }}
-                    animate={{ opacity: 1 }}
-                    transition={{ duration: 0.4, delay: 1.1 + index * 0.1 }}
-                  >
+                  <div className="text-center">
                     <p className={`text-xs font-medium ${isToday ? 'text-purple-400' : 'text-gray-300'}`}>
                       {day.dayName}
                     </p>
                     <p className={`text-xs ${isToday ? 'text-purple-300' : 'text-gray-500'}`}>
                       {day.dayNumber}
                     </p>
-                  </motion.div>
-                </motion.div>
+                  </div>
+                </div>
               )
             })}
           </div>
 
           {/* Legend */}
-          <motion.div 
-            className="flex justify-center items-center space-x-6 pt-4 border-t border-gray-700"
-            initial={{ opacity: 0 }}
-            animate={{ opacity: 1 }}
-            transition={{ duration: 0.4, delay: 1.5 }}
-          >
-            <motion.div 
-              className="flex items-center space-x-2"
-              whileHover={{ scale: 1.05, transition: { duration: 0.2 } }}
-            >
+          <div className="flex justify-center items-center space-x-6 pt-4 border-t border-gray-700">
+            <div className="flex items-center space-x-2">
               <div className="w-3 h-3 rounded bg-gradient-to-t from-purple-600 to-purple-400"></div>
               <span className="text-xs text-gray-400">Today</span>
-            </motion.div>
-            <motion.div 
-              className="flex items-center space-x-2"
-              whileHover={{ scale: 1.05, transition: { duration: 0.2 } }}
-            >
+            </div>
+            <div className="flex items-center space-x-2">
               <div className="w-3 h-3 rounded bg-gradient-to-t from-gray-600 to-gray-400"></div>
               <span className="text-xs text-gray-400">Other Days</span>
-            </motion.div>
-          </motion.div>
-        </motion.div>
+            </div>
+          </div>
+        </div>
       )}
-    </motion.div>
+    </div>
   )
 }
 
