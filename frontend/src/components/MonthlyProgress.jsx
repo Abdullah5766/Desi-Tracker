@@ -122,9 +122,6 @@ const MonthlyProgress = () => {
   }
 
 
-  const totalMonthlyCalories = monthlyTotals.reduce((sum, day) => sum + day.calories, 0)
-  const totalMonthlyGoal = calculatedCalories ? calculatedCalories * monthlyTotals.length : 0
-  const monthlyDeficit = totalMonthlyGoal - totalMonthlyCalories
   
   // Get goal display information
   const getGoalDisplayInfo = () => {

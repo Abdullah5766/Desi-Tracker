@@ -1,4 +1,10 @@
 {
   "buildCommand": "npm ci && npx prisma generate && cd frontend && npm ci --include=dev && npm run build",
-  "outputDirectory": "frontend/dist"
+  "outputDirectory": "frontend/dist",
+  "rewrites": [
+    {
+      "source": "/((?!api/.*).*)",
+      "destination": "/index.html"
+    }
+  ]
 }
