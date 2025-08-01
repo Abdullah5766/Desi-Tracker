@@ -121,6 +121,10 @@ const FoodTracker = () => {
     snack: todayEntries.filter(entry => entry.mealType === 'snack')
   }
 
+  // Debug logging
+  console.log('🔍 FoodTracker - todayEntries:', todayEntries)
+  console.log('🔍 FoodTracker - groupedEntries:', groupedEntries)
+
   const mealTypeLabels = {
     breakfast: 'Breakfast',
     lunch: 'Lunch',

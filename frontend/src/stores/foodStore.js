@@ -396,9 +396,11 @@ export const useFoodStore = create((set, get) => ({
   // Food entry functions
   addFoodEntry: async (foodId, quantity, mealType, date = null) => {
     try {
-      const { currentTrackingDate } = get()
+      const { currentTrackingDate, todayEntries } = get()
       const entryDate = date || currentTrackingDate
       console.log('🍽️ Adding food entry:', { foodId, quantity, mealType, date: entryDate, currentTrackingDate })
+      console.log('🍽️ Current todayEntries before adding:', todayEntries)
+      console.log('🍽️ Auth headers:', api.defaults.headers.common['Authorization'])
       const response = await api.post('/food-entries', {
         foodId,
         quantity: parseFloat(quantity),
@@ -425,6 +427,11 @@ export const useFoodStore = create((set, get) => ({
         
         // Recalculate daily totals
         get().calculateDailyTotals()
+        
+        // Log the updated state
+        const updatedState = get()
+        console.log('✅ Updated todayEntries after adding:', updatedState.todayEntries)
+        console.log('✅ Updated dailyTotals after adding:', updatedState.dailyTotals)
       } else {
         console.log('⚠️ Entry date doesn\'t match tracking date, not adding to state')
         console.log('⚠️ Refreshing today\'s entries from API instead')
@@ -583,6 +590,7 @@ export const useFoodStore = create((set, get) => ({
     try {
       const { currentTrackingDate } = get()
       console.log('🔍 Fetching entries for date:', currentTrackingDate)
+      console.log('🔍 API request URL will be:', `/food-entries?date=${currentTrackingDate}&limit=100`)
       
       // Load custom food entries first
       get().loadCustomFoodEntries()
