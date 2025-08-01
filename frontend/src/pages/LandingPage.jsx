@@ -86,20 +86,20 @@ const LandingPage = () => {
               <span className="text-2xl font-bold text-gradient">DesiTracker</span>
             </motion.div>
             <motion.div 
-              className="flex items-center space-x-4"
+              className="flex items-center space-x-2 sm:space-x-4"
               initial={{ opacity: 0, x: 20 }}
               animate={{ opacity: 1, x: 0 }}
               transition={{ duration: 0.6, delay: 0.2 }}
             >
               <button
                 onClick={handleLogin}
-                className="btn-outline text-sm"
+                className="btn-outline text-xs sm:text-sm px-3 py-2 sm:px-4"
               >
                 Sign In
               </button>
               <button
                 onClick={handleGetStarted}
-                className="btn-primary text-sm"
+                className="btn-primary text-xs sm:text-sm px-3 py-2 sm:px-4"
               >
                 Get Started
               </button>
@@ -167,7 +167,7 @@ const LandingPage = () => {
               <motion.img
                 src={heroImage} 
                 alt="DesiTracker App Preview"
-                className="w-full h-auto object-contain max-h-[70vh] max-w-full"
+                className="w-full h-auto object-contain max-h-[50vh] sm:max-h-[60vh] lg:max-h-[70vh] max-w-full"
                 style={{ filter: 'drop-shadow(0 10px 20px rgba(0,0,0,0.3))' }}
                 initial={{ opacity: 0, scale: 0.8 }}
                 animate={{ opacity: 1, scale: 1 }}
