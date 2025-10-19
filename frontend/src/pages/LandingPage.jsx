@@ -13,7 +13,6 @@ import toast from 'react-hot-toast'
 import { useAuthStore } from '../stores/authStore'
 import Modal from '../components/common/Modal'
 import LoadingSpinner from '../components/common/LoadingSpinner'
-import heroImage from '../assets/abdimg-removebg-preview.png'
 import friendPhoto1 from '../assets/WhatsApp Image 2025-07-31 at 15.09.00.jpeg'
 import friendPhoto2 from '../assets/WhatsApp Image 2025-07-31 at 15.09.01.jpeg'
 import friendPhoto3 from '../assets/WhatsApp Image 2025-07-31 at 15.09.01 (1).jpeg'
@@ -113,8 +112,8 @@ const LandingPage = () => {
         {/* Smooth gradient overlay */}
         <div className="absolute bottom-0 left-0 right-0 h-64 bg-gradient-to-t from-gray-800 via-gray-900/30 to-transparent pointer-events-none z-20"></div>
         <div className="max-w-7xl mx-auto relative z-10">
-          <div className="grid lg:grid-cols-2 gap-12 items-center">
-            {/* Left Column - Text Content */}
+          <div className="flex justify-center items-center">
+            {/* Text Content */}
             <motion.div 
               className="text-center lg:text-left"
               variants={slideInLeft}
@@ -157,24 +156,6 @@ const LandingPage = () => {
               </motion.div>
             </motion.div>
 
-            {/* Right Column - Hero Image */}
-            <motion.div 
-              className="relative order-first lg:order-last flex justify-center items-start"
-              variants={slideInRight}
-              initial="initial"
-              animate="animate"
-            >
-              <motion.img
-                src={heroImage} 
-                alt="DesiTracker App Preview"
-                className="w-full h-auto object-contain max-h-[50vh] sm:max-h-[60vh] lg:max-h-[70vh] max-w-full"
-                style={{ filter: 'drop-shadow(0 10px 20px rgba(0,0,0,0.3))' }}
-                initial={{ opacity: 0, scale: 0.8 }}
-                animate={{ opacity: 1, scale: 1 }}
-                transition={{ duration: 1, delay: 0.4 }}
-                whileHover={{ scale: 1.02, transition: { duration: 0.3 } }}
-              />
-            </motion.div>
           </div>
         </div>
       </section>
